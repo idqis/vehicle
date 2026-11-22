@@ -4503,8 +4503,8 @@
                                     <div>${brandBadge}${matchBadge}</div>
                                     <span class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded font-mono">${car.year}</span>
                                 </div>
-                                ${tagHtml ? `<div class="mb-1.5">${tagHtml}</div>` : ''}
                                 <h2 class="text-lg font-bold text-slate-900 cursor-pointer hover:underline" onclick="selectViewEnc('VEHICLE','${encKey(vehicle.key)}')">${highlightHtml(car.title)}</h2>
+                                ${tagHtml ? `<div class="mb-1.5">${tagHtml}</div>` : ''}
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mt-3 mb-1">엔진 <span class="normal-case font-normal">· 우측: 해당 엔진 사용 차종</span></span>
                                 <div class="flex flex-col gap-1">${engineRowsHtml}</div>
                                 ${car.sharedWith ? `<p class="mt-2 rounded-md border border-indigo-100 bg-indigo-50 px-2.5 py-1.5 text-xs font-medium text-indigo-800">${car.sharedWith}</p>` : ''}
