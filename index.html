@@ -303,7 +303,10 @@
                 tirePressure: "30 ~ 32 PSI (205 ~ 220 kPa)",
                 wheelTorque: "76 lb-ft (103 Nm)",
                 tpmsReset: "[2008+ 적용] Direct TPMS: 규정 공기압 보충 후 글로브박스 하단 또는 운전석 하단 'TPMS SET' 버튼 3초 이상 길게 눌러 경고등 3회 점멸 확인.",
-                sharedWith: "엔진/플랫폼 공유: Pontiac Vibe (2003~2010, Toyota Matrix 쌍둥이 차종)",
+                sharedWith: [
+                    { engine: "1.8L 1ZZ-FE", need: ["1zz-fe"], with: "Pontiac Vibe (2003~2008)" },
+                    { engine: "1.8L 2ZR-FE", need: ["2zr-fe"], with: "Pontiac Vibe (2009~2010)" }
+                ],
                 resetSteps: [
                     "Ignition ON → ODO/TRIP 버튼을 눌러 계기판에 'ODO'(2008 이하) 또는 'TRIP A'(2009+) 표시",
                     "Ignition OFF → ODO/TRIP 버튼을 누른 상태에서 Ignition ON 전환",
@@ -328,7 +331,11 @@
                 tirePressure: "29 ~ 32 PSI (200 ~ 220 kPa)",
                 wheelTorque: "76 lb-ft (103 Nm)",
                 tpmsReset: "TPMS 미적용 세대 (2001년식까지 TPMS 미장착).",
-                sharedWith: "엔진 공유: Lexus ES 250 / ES 300 (2VZ-FE, 3VZ-FE, 1MZ-FE V6 공유)",
+                sharedWith: [
+                    { engine: "2.5L 2VZ-FE", need: ["2vz-fe"], with: "Lexus ES 250" },
+                    { engine: "3.0L 3VZ-FE", need: ["3vz-fe"], with: "Lexus ES 300 (1992~1996)" },
+                    { engine: "3.0L 1MZ-FE", need: ["1mz-fe"], with: "Lexus ES 300 (1997~2001)" }
+                ],
                 resetSteps: [
                     "1983~2001 북미 Camry는 엔진오일 교환 알림 경고등 미적용 (TRIP 버튼 수동 리셋)"
                 ]
@@ -352,7 +359,11 @@
                 tirePressure: "30 ~ 32 PSI (205 ~ 220 kPa)",
                 wheelTorque: "76 lb-ft (103 Nm)",
                 tpmsReset: "[2007+ XV40 적용] Direct TPMS: 규정 공기압 보충 후 글로브박스 내부 좌측 'TPMS' 리셋 버튼을 경고등이 3번 깜빡일 때까지 길게 누름.",
-                sharedWith: "엔진 공유: Lexus ES 300 / ES 330 / ES 350 (1MZ/3MZ/2GR-FE V6)",
+                sharedWith: [
+                    { engine: "3.0L 1MZ-FE", need: ["1mz"], veh: ["Camry", "Solara", "Avalon"], with: "Lexus ES 300 (2002~2003)" },
+                    { engine: "3.3L 3MZ-FE", need: ["3mz"], veh: ["Camry", "Solara"], with: "Lexus ES 330" },
+                    { engine: "3.5L 2GR-FE", need: ["2gr-fe"], veh: ["Camry", "Solara", "Avalon"], with: "Lexus ES 350 (2007~2012)" }
+                ],
                 resetSteps: [
                     "Ignition ON → ODO/TRIP 버튼을 눌러 'ODO'(XV30) 또는 'TRIP A'(XV40) 표시",
                     "Ignition OFF → ODO/TRIP 버튼을 누른 채 Ignition ON 전환",
@@ -400,7 +411,10 @@
                 tirePressure: "33 ~ 36 PSI (230 ~ 250 kPa) Front & Rear",
                 wheelTorque: "76 ~ 87 lb-ft (103 ~ 118 Nm) [통상 76~80 lb-ft]",
                 tpmsReset: "Direct TPMS: 냉간 규정 공기압 보충 후 10~15분 주행 시 자동 소등. (일부 모델은 글로브박스 하단 'TPMS' 리셋 버튼 또는 클러스터 [TPWS] → [Set Pressure])",
-                sharedWith: "엔진 공유: Lexus NX 250 / NX 350h / RX 350h / ES 250 (2.5L A25A-FKS/FXS 계열)",
+                sharedWith: [
+                    { engine: "2.5L A25A-FKS (NA)", need: ["a25a-fks"], veh: ["RAV4", "Camry"], with: "Lexus ES 250 · NX 250" },
+                    { engine: "2.5L A25A-FXS (Hybrid)", need: ["a25a-fxs"], veh: ["RAV4 Hybrid & Prime", "Camry", "Highlander", "Sienna"], with: "Lexus ES 300h · NX 350h · RX 350h" }
+                ],
                 resetSteps: [
                     "Ignition ON → Steering Wheel 방향키로 클러스터 [Settings (톱니바퀴)] → [Vehicle Settings] → [Scheduled Maintenance] → [Yes]",
                     "구형 클러스터: TRIP A 선택 후 전원 OFF → ODO/TRIP 버튼 누른 채 Ignition ON 5초 유지"
@@ -425,7 +439,9 @@
                 tirePressure: "26 ~ 35 PSI (180 ~ 240 kPa - B필러 스티커 확인)",
                 wheelTorque: "83 lb-ft (112 Nm) [6-Lug 트럭/SUV 표준]",
                 tpmsReset: "[2007+ 적용] Direct TPMS: 스페어타이어 포함 5개 타이어 공기압 보충 후 운전석 하단 'TPMS SET' 버튼 3초 이상 길게 누름.",
-                sharedWith: "엔진 공유: Lexus GX 470 / LX 470 (4.7L 2UZ-FE V8)",
+                sharedWith: [
+                    { engine: "4.7L 2UZ-FE V8", need: ["2uz-fe"], with: "Lexus GX 470 · LX 470" }
+                ],
                 resetSteps: [
                     "[2005~2009 Tacoma/4Runner] ODO/TRIP 버튼으로 'ODO' 선택 → 시동 OFF → ODO 버튼 누른 채 Ignition ON 5초 유지",
                     "[2004 이하] 계기판 'T-BELT' 경고등만 계기판 핀 리셋 적용 (엔진오일 알림 없음)"
@@ -449,7 +465,11 @@
                 tirePressure: "30 ~ 36 PSI (205 ~ 250 kPa - 트럭/SUV 도어 스티커 확인)",
                 wheelTorque: "83 ~ 97 lb-ft (112 ~ 131 Nm) [Tacoma/4Runner: 83 lb-ft / Tundra: 97 lb-ft]",
                 tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 주행 시 자동 소등. (2세트 휠 등록 모델은 클러스터 [TPWS] 메뉴에서 압력 설정)",
-                sharedWith: "엔진 공유: Lexus NX 350 / RX 350 2.4T (2.4L T24A-FTS)",
+                sharedWith: [
+                    { engine: "2.4L T24A-FTS Turbo", need: ["t24a-fts"], veh: ["Tacoma", "4Runner", "Highlander"], with: "Lexus NX 350 · RX 350 · TX 350" },
+                    { engine: "3.4L V35A-FTS V6 TT", need: ["v35a-fts"], veh: ["Tundra"], with: "Lexus LX 600 · GX 550" },
+                    { engine: "3.5L 2GR-FKS V6", need: ["2gr-fks"], veh: ["Tacoma", "Highlander"], with: "Lexus ES 350 (2019~) · RX 350 (2016~2022)" }
+                ],
                 resetSteps: [
                     "Ignition ON → Steering Wheel 방향키로 클러스터 [Settings (톱니바퀴)] → [Vehicle Settings] → [Scheduled Maintenance] → [Yes]",
                     "일부 트림은 인포테인먼트 [Setup] → [Vehicle] → [Maintenance]에서 초기화"
@@ -501,7 +521,12 @@
                 tirePressure: "29 ~ 32 PSI (200 ~ 220 kPa)",
                 wheelTorque: "76 lb-ft (103 Nm)",
                 tpmsReset: "TPMS 미적용 세대 (2000년식 이하).",
-                sharedWith: "엔진 공유: Toyota Camry V6 (3VZ/1MZ) / Toyota Supra NA (2JZ-GE)",
+                sharedWith: [
+                    { engine: "2.5L 2VZ-FE", need: ["2vz"], with: "Toyota Camry" },
+                    { engine: "3.0L 3VZ-FE", need: ["3vz"], with: "Toyota Camry" },
+                    { engine: "3.0L 1MZ-FE", need: ["1mz"], with: "Toyota Camry" },
+                    { engine: "3.0L 2JZ-GE I6", need: ["2jz-ge"], with: "Toyota Supra (NA)" }
+                ],
                 resetSteps: [
                     "1990~2000 초기형 Lexus는 계기판 오일 교환 리마인더 미적용 (TRIP 버튼 수동 관리)"
                 ]
@@ -525,7 +550,11 @@
                 tirePressure: "30 ~ 33 PSI (205 ~ 230 kPa)",
                 wheelTorque: "76 lb-ft (103 Nm)",
                 tpmsReset: "[2007+ 적용] Direct TPMS: 스페어타이어 포함 공기압 보충 후 운전석/글로브박스 하단 'TPMS SET' 버튼 3초 이상 길게 누름.",
-                sharedWith: "엔진 공유: Toyota Highlander / Camry V6 / Sienna (1MZ/3MZ/2GR-FE)",
+                sharedWith: [
+                    { engine: "3.0L 1MZ-FE", need: ["1mz-fe"], with: "Toyota Camry · Highlander · Sienna" },
+                    { engine: "3.3L 3MZ-FE", need: ["3mz-fe"], with: "Toyota Highlander (Hybrid) · Sienna" },
+                    { engine: "3.5L 2GR-FE V6", need: ["2gr-fe"], with: "Toyota Camry · Highlander · Sienna · RAV4 · Avalon" }
+                ],
                 resetSteps: [
                     "Ignition ON → ODO/TRIP 버튼으로 'ODO' 또는 'TRIP A' 선택 후 전원 OFF",
                     "ODO/TRIP 버튼을 누른 상태에서 Ignition ON 전환 후 5초간 유지하여 'MAINT REQD' 소등"
@@ -549,7 +578,10 @@
                 tirePressure: "33 ~ 36 PSI (230 ~ 250 kPa)",
                 wheelTorque: "76 ~ 87 lb-ft (103 ~ 118 Nm)",
                 tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 주행 시 자동 소등. (계기판/인포테인먼트 [TPWS] → [Set Pressure]로 기준 압력 재설정 가능)",
-                sharedWith: "엔진 공유: Toyota RAV4 / Camry 등 (2.5L A25A-FKS/FXS 계열)",
+                sharedWith: [
+                    { engine: "2.5L A25A-FKS (NA)", need: ["a25a-fks"], veh: ["NX 250", "ES 250"], with: "Toyota Camry · RAV4 · Avalon" },
+                    { engine: "2.5L A25A-FXS (Hybrid)", need: ["a25a-fxs"], veh: ["NX 350h", "RX 350h", "ES 300h"], with: "Toyota Camry Hybrid · RAV4 Hybrid · Highlander Hybrid · Sienna" }
+                ],
                 resetSteps: [
                     "Ignition ON → Steering Wheel 방향키로 클러스터 [Settings (톱니바퀴)] → [Vehicle Settings] → [Scheduled Maintenance] → [Yes]",
                     "또는 인포테인먼트 화면 [Settings (설정)] → [Vehicle] → [Maintenance] → [Reset]"
@@ -573,7 +605,9 @@
                 tirePressure: "35 ~ 36 PSI (240 ~ 250 kPa)",
                 wheelTorque: "76 ~ 87 lb-ft (103 ~ 118 Nm)",
                 tpmsReset: "Direct TPMS: 냉간 공기압 보충 후 주행 시 자동 소등 및 실시간 공기압 갱신.",
-                sharedWith: "엔진 공유: Toyota Tacoma / Highlander 등 (2.4L T24A-FTS)",
+                sharedWith: [
+                    { engine: "2.4L T24A-FTS Turbo", need: ["t24a-fts"], with: "Toyota Tacoma · Highlander · Grand Highlander · Lexus TX 350" }
+                ],
                 resetSteps: [
                     "Ignition ON → Infotainment 화면 [Settings] → [Vehicle] → [Maintenance] (또는 클러스터 [Scheduled Maintenance]) → [Reset]"
                 ]
@@ -671,7 +705,11 @@
                 tirePressure: "29 ~ 32 PSI (200 ~ 220 kPa)",
                 wheelTorque: "80 lb-ft (108 Nm)",
                 tpmsReset: "TPMS 미적용 세대 (2002년식 이하).",
-                sharedWith: "엔진 공유: Acura CL 2.2 / 2.3 / 3.0 V6 (F22B / F23A / J30A1)",
+                sharedWith: [
+                    { engine: "2.2L F22B", need: ["f22a/b"], veh: ["Accord"], with: "Acura CL 2.2" },
+                    { engine: "2.3L F23A1", need: ["f23a1"], veh: ["Accord"], with: "Acura CL 2.3" },
+                    { engine: "3.0L J30A1 V6", need: ["j30a1"], veh: ["Accord"], with: "Acura CL 3.0" }
+                ],
                 resetSteps: [
                     "[1990~1997] 계기판 'MAINT REQD' 슬롯에 자동차 키를 삽입해 초록색으로 리셋",
                     "[1998~2002] Ignition OFF → SELECT/RESET 버튼을 누른 채 Ignition ON 전환 후 10초 유지"
@@ -696,7 +734,6 @@
                 tirePressure: "30 ~ 33 PSI (205 ~ 230 kPa)",
                 wheelTorque: "80 lb-ft (108 Nm)",
                 tpmsReset: "[2008~2012 Direct TPMS] 냉간 공기압 주입 후 주행 시 자동 소등. / [2013~2017 Indirect TPMS] 운전석 좌측 하단 'TPMS' 버튼 3초 이상 길게 누르거나 i-MID [Vehicle Settings] → [TPMS Calibration] 실행.",
-                sharedWith: "엔진 공유: Acura TSX 2.4L (K24) / Acura TL 3.5L V6 (J35)",
                 resetSteps: [
                     "[2003~2005] Ignition OFF → SELECT/RESET 버튼 누른 채 Ignition ON 전환 후 10초 유지",
                     "[2006~2017 Maintenance Minder] Ignition ON → SEL/RESET 버튼으로 Oil Life 화면 이동 → 10초 길게 누름 → 깜빡일 때 다시 5초 눌러 '100%' 초기화"
@@ -745,7 +782,6 @@
                 tirePressure: "30 ~ 33 PSI (205 ~ 230 kPa - 도어 잼 스티커 확인)",
                 wheelTorque: "80 lb-ft (108 Nm) [M12×1.5]",
                 tpmsReset: "[2023+ 신형 CR-V/Civic] Direct TPMS: 별도 버튼 없음. 냉간 공기압 보충 후 주행 시 자동 소등. / [2016~2022] TPMS 캘리브레이션 실행.",
-                sharedWith: "엔진 공유: Acura Integra 1.5T (L15 계열)",
                 resetSteps: [
                     "Ignition ON (엔진 OFF 상태) → Steering Wheel 좌측 홈/방향키로 클러스터 [Settings] → [Maintenance] → [Oil Life] → [Reset] → [Yes]"
                 ]
@@ -790,7 +826,6 @@
                 tirePressure: "32 ~ 35 PSI (220 ~ 240 kPa)",
                 wheelTorque: "80 ~ 94 lb-ft (108 ~ 127 Nm) [구형: 80 lb-ft / 신형 5×120: 94 lb-ft]",
                 tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Acura MDX 3.5L V6 (J35 계열)",
                 resetSteps: [
                     "[2016+ 신형] Ignition ON → 클러스터 [Settings] → [Maintenance] → [Oil Life] → [Reset] → [Yes]",
                     "[2006~2015] SEL/RESET 버튼으로 Oil Life 화면 선택 → 10초 길게 누른 뒤 재확인하여 100% 초기화"
@@ -819,7 +854,9 @@
                 tirePressure: "29 ~ 33 PSI (200 ~ 230 kPa)",
                 wheelTorque: "80 lb-ft (108 Nm)",
                 tpmsReset: "[2007+ TSX 적용] Direct TPMS: 냉간 공기압 보충 후 주행 시 자동 소등. (2006 이하 TPMS 미적용)",
-                sharedWith: "엔진 공유: Honda Civic Si (B16/K20) / Honda Accord 2.4 (K24)",
+                sharedWith: [
+                    { engine: "2.0L K20A3", need: ["k20a2"], with: "Honda Civic Si (EP3, 2002~2005)" }
+                ],
                 resetSteps: [
                     "[1990~2001 Integra] 계기판 슬롯에 자동차 키를 꽂아 'MAINT REQD' 초록색으로 복귀",
                     "[2002~2006 RSX / 초기 TSX] Ignition OFF → SELECT/RESET 버튼 누른 채 Ignition ON 전환 후 10초 유지",
@@ -890,7 +927,9 @@
                 tirePressure: "32 ~ 35 PSI (220 ~ 240 kPa)",
                 wheelTorque: "94 lb-ft (127 Nm)",
                 tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Acura TLX 2.0T (2.0L K20C4 Turbo)",
+                sharedWith: [
+                    { engine: "2.0L K20C4 Turbo", need: ["k20c4"], with: "Acura TLX (2.0T)" }
+                ],
                 resetSteps: [
                     "Ignition ON → True Touchpad Interface 화면 [Settings (설정)] → [Vehicle] → [Maintenance] → [Oil Life] → [Reset]"
                 ]
@@ -941,7 +980,9 @@
                 tirePressure: "33 ~ 36 PSI (230 ~ 250 kPa)",
                 wheelTorque: "94 lb-ft (127 Nm) [Integra/ILX: 80 lb-ft]",
                 tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Acura RDX (2.0L K20C4 Turbo) / Honda Civic·CR-V 1.5T",
+                sharedWith: [
+                    { engine: "2.0L K20C4 Turbo", need: ["k20c4"], with: "Acura RDX (2019~)" }
+                ],
                 resetSteps: [
                     "Ignition ON → 클러스터 [Settings] → [Maintenance] → [Oil Life] → [Reset]"
                 ]
@@ -1140,7 +1181,11 @@
                 tirePressure: "30 ~ 35 PSI (205 ~ 240 kPa)",
                 wheelTorque: "75 ~ 100 lb-ft (102 ~ 135 Nm)",
                 tpmsReset: "[2008 Tribute 적용] Direct TPMS: 규정 공기압 보충 후 10~15분 주행 시 자동 소등.",
-                sharedWith: "플랫폼/엔진 공유: Ford Probe (626/MX-6) · Ford Escape (Tribute) · Ford Ranger (B-Series)",
+                sharedWith: [
+                    { engine: "2.5L KL-DE V6", need: ["kl-de"], veh: ["626", "MX-6"], with: "Ford Probe GT" },
+                    { engine: "2.3L MZR", need: ["mzr"], veh: ["Tribute"], with: "Ford Escape (2005~2008)" },
+                    { engine: "3.0L AJ / Duratec V6", need: ["aj/duratec"], veh: ["Tribute"], with: "Ford Escape (2001~2008)" }
+                ],
                 resetSteps: [
                     "1981~2008 구형 626/Tribute는 계기판 오일 리마인더 미적용 (TRIP 버튼 수동 리셋)"
                 ]
@@ -1325,7 +1370,9 @@
                 tirePressure: "30 ~ 32 PSI (205 ~ 220 kPa)",
                 wheelTorque: "65 ~ 80 lb-ft (88 ~ 108 Nm)",
                 tpmsReset: "[2007~2010 HD Elantra 적용] Direct TPMS: 냉간 공기압 보충 후 10~20분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Kia Spectra / Soul 초기 2.0L Beta II (G4GC)",
+                sharedWith: [
+                    { engine: "2.0L Beta II (G4GC)", need: ["g4gc"], with: "Kia Spectra · Soul (초기 2.0L)" }
+                ],
                 resetSteps: [
                     "1992~2010 북미 Elantra/Tiburon은 계기판 오일 교환 알림 미적용 (TRIP 버튼 수동 리셋)"
                 ]
@@ -1348,7 +1395,11 @@
                 tirePressure: "30 ~ 33 PSI (205 ~ 230 kPa)",
                 wheelTorque: "65 ~ 80 lb-ft (88 ~ 108 Nm)",
                 tpmsReset: "[2006~2010 NF Sonata 적용] Direct TPMS: 규정 공기압 보충 후 10~20분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Kia Optima (MS/MG) / Magentis (2.4L Sirius·Theta / 2.7L Delta V6)",
+                sharedWith: [
+                    { engine: "2.4L Sirius", need: ["sirius"], veh: ["Sonata"], with: "Kia Optima (MS) · Magentis" },
+                    { engine: "2.4L Theta II", need: ["theta"], veh: ["Sonata"], with: "Kia Optima (MG)" },
+                    { engine: "2.7L Delta V6", need: ["delta"], veh: ["Sonata"], with: "Kia Optima · Magentis" }
+                ],
                 resetSteps: [
                     "1989~2010 북미 Sonata는 계기판 오일 리마인더 미적용 (TRIP 버튼 수동 리셋)"
                 ]
@@ -1372,7 +1423,10 @@
                 tirePressure: "30 ~ 33 PSI (205 ~ 230 kPa)",
                 wheelTorque: "65 ~ 80 lb-ft (88 ~ 108 Nm)",
                 tpmsReset: "[2007+ CM Santa Fe / JM Tucson 적용] Direct TPMS: 별도 버튼 없음. 규정 공기압 주입 후 10~20분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Kia Sportage (KM) / Kia Sorento (XM 3.5L Lambda V6)",
+                sharedWith: [
+                    { engine: "2.0L Beta II (G4GC)", need: ["beta ii"], with: "Kia Sportage (KM)" },
+                    { engine: "2.7L Delta V6", need: ["2.7l delta"], with: "Kia Sportage (KM)" }
+                ],
                 resetSteps: [
                     "2001~2012 북미 Santa Fe / Tucson은 계기판 자동 오일 알림 미적용 (TRIP 버튼 수동 리셋)"
                 ]
@@ -1509,7 +1563,9 @@
                 tirePressure: "35 PSI (240 kPa)",
                 wheelTorque: "65 ~ 80 lb-ft (88 ~ 108 Nm)",
                 tpmsReset: "Direct TPMS: 별도 리셋 스위치 없음. 규정 공기압 보충 후 10~20분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Kia Optima / Sorento / Sportage 2.0T (2.0L Theta II T-GDi)",
+                sharedWith: [
+                    { engine: "2.0L Theta II T-GDi", need: ["theta ii"], with: "Kia Optima (JF) · Sorento (UM) · Sportage (QL)" }
+                ],
                 resetSteps: [
                     "Ignition ON → 클러스터 [User Settings] → [Service Interval] → OK 버튼을 3초 이상 길게 눌러 Reset"
                 ]
@@ -1554,7 +1610,9 @@
                 tirePressure: "35 ~ 36 PSI (240 ~ 250 kPa)",
                 wheelTorque: "80 ~ 94 lb-ft (108 ~ 127 Nm)",
                 tpmsReset: "Direct TPMS (Auto-Learn): 별도 리셋 메뉴 없음. 냉간 규정 공기압 주입 후 주행 시 자동 해제.",
-                sharedWith: "엔진 공유: Kia Sorento / K5 GT 2.5T (2.5L Smartstream G2.5 T-GDi)",
+                sharedWith: [
+                    { engine: "2.5L Smartstream G2.5 T-GDi", need: ["g2.5"], with: "Kia Sorento (MQ4) · K5 GT" }
+                ],
                 resetSteps: [
                     "Ignition ON → 홈 화면 [Setup] → [Vehicle] → [Cluster] → [Service Interval] → [Reset]"
                 ]
@@ -1605,7 +1663,11 @@
                 tirePressure: "29 ~ 33 PSI (200 ~ 230 kPa)",
                 wheelTorque: "65 ~ 87 lb-ft (88 ~ 118 Nm)",
                 tpmsReset: "[2008~2011 적용] Direct TPMS: 냉간 공기압 보충 후 10~20분 주행 시 자동 소등. (2007 이하 TPMS 미적용)",
-                sharedWith: "엔진 공유: Hyundai Accent (Alpha II) / Hyundai Tucson JM (Beta II / Delta V6)",
+                sharedWith: [
+                    { engine: "1.6L Alpha II", need: ["alpha ii"], with: "Hyundai Accent (2000~2005)" },
+                    { engine: "2.0L Beta II", need: ["beta ii"], with: "Hyundai Tucson (JM)" },
+                    { engine: "2.7L Delta V6", need: ["delta"], with: "Hyundai Tucson (JM) · Santa Fe (SM/CM)" }
+                ],
                 resetSteps: [
                     "1994~2011 북미 Sephia/Spectra/Rio/KM Sportage는 계기판 오일 리마인더 미적용 (TRIP 버튼 수동 리셋)"
                 ]
@@ -1629,7 +1691,10 @@
                 tirePressure: "30 ~ 35 PSI (205 ~ 240 kPa)",
                 wheelTorque: "65 ~ 87 lb-ft (88 ~ 118 Nm)",
                 tpmsReset: "[2007~2010 적용] Direct TPMS: 냉간 규정 공기압 주입 후 10~20분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Hyundai Sonata (EF/NF) / Hyundai Santa Fe (SM/CM)",
+                sharedWith: [
+                    { engine: "2.4L Sirius / Theta", need: ["sirius"], with: "Hyundai Sonata (EF/NF)" },
+                    { engine: "2.7L Delta V6", need: ["delta"], with: "Hyundai Sonata · Santa Fe (SM/CM)" }
+                ],
                 resetSteps: [
                     "2001~2010 북미 Optima/BL Sorento/Sedona는 계기판 오일 리마인더 미적용 (TRIP 버튼 수동 리셋)"
                 ]
@@ -1697,7 +1762,9 @@
                 tirePressure: "35 PSI (240 kPa)",
                 wheelTorque: "65 ~ 80 lb-ft (88 ~ 108 Nm)",
                 tpmsReset: "Direct TPMS: 규정 공기압 35 PSI 주입 후 10~20분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Hyundai Sonata 2.0T / Santa Fe Sport 2.0T (2.0L Theta II T-GDi)",
+                sharedWith: [
+                    { engine: "2.0L Theta II T-GDi", need: ["theta ii"], with: "Hyundai Sonata (YF/LF 2.0T) · Santa Fe Sport (DM) · Santa Fe (TM 2.0T)" }
+                ],
                 resetSteps: [
                     "Ignition ON → 클러스터 [User Settings] → [Service Interval] → OK 버튼 3초 유지"
                 ]
@@ -1742,7 +1809,9 @@
                 tirePressure: "35 PSI (240 kPa) Front & Rear",
                 wheelTorque: "80 ~ 94 lb-ft (108 ~ 127 Nm)",
                 tpmsReset: "Direct TPMS (Auto-Learn): 별도 버튼 없음. 냉간 35 PSI 보충 후 10~15분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Hyundai Santa Fe / Sonata N-Line / Santa Cruz 2.5T (2.5L Smartstream G2.5 T-GDi)",
+                sharedWith: [
+                    { engine: "2.5L Smartstream G2.5 T-GDi", need: ["g2.5"], with: "Hyundai Santa Fe · Sonata N Line · Santa Cruz" }
+                ],
                 resetSteps: [
                     "Ignition ON → Infotainment [Setup] → [Vehicle] → [Cluster] → [Service Interval] → [Reset]"
                 ]
@@ -1788,7 +1857,10 @@
                 tirePressure: "35 ~ 36 PSI (240 ~ 250 kPa)",
                 wheelTorque: "80 ~ 94 lb-ft (108 ~ 127 Nm)",
                 tpmsReset: "Direct TPMS (Auto-Learn): 별도 리셋 메뉴 없음. 냉간 35~36 PSI 보충 후 30 km/h 이상 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Hyundai Palisade / Santa Fe XL 일부 V6 (Lambda 계열)",
+                sharedWith: [
+                    { engine: "3.8L Lambda II GDi", need: ["lambda ii"], veh: ["Telluride"], with: "Hyundai Palisade (2020~2022)" },
+                    { engine: "3.3L Lambda II GDi", need: ["lambda ii"], veh: ["Sedona", "Sorento"], with: "Hyundai Santa Fe XL" }
+                ],
                 resetSteps: [
                     "Ignition ON → 클러스터 [User Settings] → [Convenience] → [Service Interval] → OK 3초 유지"
                 ]
@@ -1811,7 +1883,10 @@
                 tirePressure: "Front 36 PSI (250 kPa) / Rear 36~39 PSI (250~270 kPa)",
                 wheelTorque: "80 ~ 94 lb-ft (108 ~ 127 Nm)",
                 tpmsReset: "Direct TPMS: 냉간 공기압 보충(후륜 39 PSI 스태거드 사양 주의) 후 10~15분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Genesis G70 (IK) 2.0T & 3.3T",
+                sharedWith: [
+                    { engine: "2.0L Theta II T-GDi", need: ["theta ii"], with: "Genesis G70 (IK)" },
+                    { engine: "3.3L Lambda II Twin-Turbo V6", need: ["lambda ii"], with: "Genesis G70 (IK)" }
+                ],
                 resetSteps: [
                     "Ignition ON → 클러스터 [User Settings] → [Convenience] → [Service Interval] → OK 3초 유지"
                 ]
@@ -1830,7 +1905,9 @@
                 yearRange: [2009, 2020],
                 year: "2009 ~ 2020",
                 engine: "3.8L Lambda II GDi / 3.3L Twin-Turbo / 5.0L Tau V8",
-                sharedWith: "엔진 공유: Hyundai Equus 5.0 V8 (5.0L Tau 계열)",
+                sharedWith: [
+                    { engine: "5.0L Tau V8", need: ["tau"], with: "Hyundai Equus (2011~2016)" }
+                ],
                 oilSpec: "API SN / SP | 5W-20 또는 5W-30",
                 capacity: "6.9 L [3.8 AWD] / 7.2 L [3.3T] / 8.3 L [5.0 V8]",
                 filterPartNo: "26320-3CAA0 (3.8) / 26320-3C700 (3.3T) / 26320-3C30A (5.0)",
@@ -1861,7 +1938,10 @@
                 tirePressure: "Front 36 PSI (250 kPa) / Rear 36~39 PSI (250~270 kPa)",
                 wheelTorque: "80 ~ 94 lb-ft (108 ~ 127 Nm)",
                 tpmsReset: "Direct TPMS: 냉간 공기압 보충(후륜 39 PSI 스태거드 사양 주의) 후 10~15분 주행 시 자동 소등.",
-                sharedWith: "엔진 공유: Kia Stinger CK 2.0T & 3.3T",
+                sharedWith: [
+                    { engine: "2.0L Theta II T-GDi", need: ["theta ii"], with: "Kia Stinger (CK)" },
+                    { engine: "3.3L Lambda II Twin-Turbo V6", need: ["lambda ii"], with: "Kia Stinger (CK)" }
+                ],
                 resetSteps: [
                     "Ignition ON → 클러스터 [User Settings] → [Convenience] → [Service Interval] → OK 3초 유지"
                 ]
@@ -2207,7 +2287,13 @@
                 tirePressure: "35 PSI (240 kPa) 표준 - 트림·휠별 상이, 도어 스티커 확인 필수",
                 wheelTorque: "140 lb-ft (190 Nm) [M14×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: GMC Sierra / Yukon / Cadillac Escalade (5.3L·6.2L 계열)",
+                sharedWith: [
+                    { engine: "5.3L L83 / L84 V8", need: ["l83"], with: "GMC Sierra 1500 · Yukon" },
+                    { engine: "6.2L L86 / L87 V8", need: ["l86"], with: "GMC Sierra 1500 · Yukon · Cadillac Escalade" },
+                    { engine: "2.7L L3B TurboMax", need: ["l3b"], with: "GMC Sierra 1500 · GMC Canyon · Chevrolet Colorado (2023~)" },
+                    { engine: "4.3L LV3 V6", need: ["lv3"], with: "GMC Sierra 1500" },
+                    { engine: "3.0L LM2 / LZ0 Duramax", need: ["lm2"], with: "GMC Sierra 1500 · Yukon" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인",
                     "오일 교환 후 반드시 리셋 (미리셋 시 이전 오일 라이프가 이어져 알림이 어긋납니다)"
@@ -2231,7 +2317,12 @@
                 tirePressure: "35 PSI (240 kPa) 표준 - 도어 스티커 확인 필수",
                 wheelTorque: "140 lb-ft (190 Nm) [M14×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: GMC Canyon (동일 파워트레인)",
+                sharedWith: [
+                    { engine: "2.5L LCV", need: ["lcv"], with: "GMC Canyon · Buick Envision (2016~)" },
+                    { engine: "3.6L LFX / LGZ V6", need: ["lfx"], with: "GMC Canyon" },
+                    { engine: "2.8L LWN Duramax", need: ["lwn"], with: "GMC Canyon" },
+                    { engine: "2.7L L3B TurboMax", need: ["l3b"], with: "GMC Canyon (2023~) · Chevrolet Silverado 1500 (2019~)" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인"
                 ]
@@ -2255,7 +2346,12 @@
                 tirePressure: "35 PSI (240 kPa) Front & Rear - 도어 스티커 확인",
                 wheelTorque: "Equinox 100 lb-ft (140 Nm) [M12×1.5] / Blazer 140 lb-ft (190 Nm) [M14×1.5] - 매뉴얼 확인",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: GMC Terrain / Buick Envision (1.5L·2.0L 계열)",
+                sharedWith: [
+                    { engine: "1.5L LYX Turbo", need: ["lyx"], with: "GMC Terrain (2018~)" },
+                    { engine: "2.0L LTG Turbo", need: ["ltg"], with: "GMC Terrain · Buick Envision · Regal · Verano · Chevrolet Malibu" },
+                    { engine: "2.0L LSY Turbo", need: ["lsy"], with: "Buick Envision (2021~)" },
+                    { engine: "3.6L LGX V6", need: ["lgx"], with: "Buick LaCrosse" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인"
                 ]
@@ -2279,7 +2375,11 @@
                 tirePressure: "35 PSI (240 kPa) Front & Rear - 도어 스티커 확인",
                 wheelTorque: "100 lb-ft (140 Nm) [M12×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Buick Encore / Encore GX / Envista, Chevrolet Sonic · Cruze (1.4T)",
+                sharedWith: [
+                    { engine: "1.4L LUV / LUJ Turbo", need: ["luv"], with: "Buick Encore · Chevrolet Sonic · Cruze (2011~2015)" },
+                    { engine: "1.2L LBP Turbo", need: ["lbp"], with: "Buick Encore GX · Envista" },
+                    { engine: "1.3L L3T Turbo", need: ["l3t"], with: "Buick Encore GX" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인"
                 ]
@@ -2326,7 +2426,10 @@
                 tirePressure: "35 PSI (240 kPa) Front & Rear - 도어 스티커 확인",
                 wheelTorque: "140 lb-ft (190 Nm) [M14×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: GMC Acadia / Buick Enclave (3.6L V6 · 2.5T 계열)",
+                sharedWith: [
+                    { engine: "3.6L LLT / LFY V6", need: ["llt"], with: "GMC Acadia · Buick Enclave" },
+                    { engine: "2.5L LK0 Turbo", need: ["lk0"], with: "GMC Acadia (2024~) · Buick Enclave (2025~)" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인"
                 ]
@@ -2349,7 +2452,10 @@
                 tirePressure: "도어 스티커 확인 필수 (LT 타이어: 하중 사양에 따라 50 ~ 80 PSI)",
                 wheelTorque: "140 lb-ft (190 Nm)",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: GMC Savana",
+                sharedWith: [
+                    { engine: "4.3L LV1 V6", need: ["lv1"], with: "GMC Savana" },
+                    { engine: "6.6L L8T V8", need: ["l8t"], with: "GMC Savana" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인"
                 ]
@@ -2542,7 +2648,13 @@
                 tirePressure: "35 PSI (240 kPa) 내외 - 도어 스티커 확인 필수 (트림·하중 사양별 상이)",
                 wheelTorque: "150 lb-ft (204 Nm) [M14×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행(약 20 mph 이상, 10~20분)하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Lincoln Navigator · Ford Expedition (3.5L EcoBoost) / Ford Mustang (5.0L Coyote)",
+                sharedWith: [
+                    { engine: "3.7L Ti-VCT", need: ["3.7l", "ti-vct"], with: "Ford Mustang (V6, 2011~2017)" },
+                    { engine: "3.3L Ti-VCT", need: ["3.3l", "ti-vct"], with: "Ford Explorer (2020~)" },
+                    { engine: "2.7L EcoBoost", need: ["2.7l", "ecoboost"], with: "Ford Edge · Fusion Sport · Ranger · Bronco · Lincoln Nautilus" },
+                    { engine: "3.5L EcoBoost", need: ["3.5l", "ecoboost"], with: "Ford Expedition · Lincoln Navigator (2015~)" },
+                    { engine: "5.0L Coyote V8", need: ["coyote"], with: "Ford Mustang GT" }
+                ],
                 resetSteps: [
                     "Ignition ON(엔진 OFF) → 스티어링 휠 방향키로 클러스터 [Settings] → [Oil Life] 선택 → OK 버튼을 길게 눌러 100%로 리셋 (SYNC 장착 모델은 [Settings] → [Vehicle] → [Oil Life] 에서도 가능)"
                 ]
@@ -2565,7 +2677,11 @@
                 tirePressure: "35 ~ 36 PSI (240 ~ 250 kPa) - 도어 스티커 확인 필수",
                 wheelTorque: "100 lb-ft (135 Nm) [M14×1.5 볼트/너트 사양 확인]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행(약 20 mph 이상, 10~20분)하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: F-150 (5.0L Coyote · 3.7L) / Explorer · Ranger · Bronco (2.3L EcoBoost)",
+                sharedWith: [
+                    { engine: "3.7L Ti-VCT", need: ["3.7l", "ti-vct"], with: "Ford F-150 (2011~2017)" },
+                    { engine: "5.0L Coyote V8", need: ["coyote"], with: "Ford F-150" },
+                    { engine: "2.3L EcoBoost", need: ["2.3l", "ecoboost"], with: "Ford Explorer · Ranger · Bronco · Lincoln MKC" }
+                ],
                 resetSteps: [
                     "Ignition ON(엔진 OFF) → 스티어링 휠 방향키로 클러스터 [Settings] → [Oil Life] 선택 → OK 버튼을 길게 눌러 100%로 리셋 (SYNC 장착 모델은 [Settings] → [Vehicle] → [Oil Life] 에서도 가능)",
                     "구형(2011~2014): 클러스터 [Settings] → [Oil Life] → \"Hold OK to reset\" 표시 후 OK 길게 누름"
@@ -2590,7 +2706,13 @@
                 tirePressure: "35 PSI (240 kPa) 내외 - 도어 스티커 확인 필수",
                 wheelTorque: "100 lb-ft (135 Nm) [M12×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행(약 20 mph 이상, 10~20분)하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Lincoln MKX·Nautilus·Aviator / Corsair (EcoBoost 계열)",
+                sharedWith: [
+                    { engine: "2.0L EcoBoost", need: ["2.0l", "ecoboost"], with: "Ford Escape · Fusion · Focus ST · Bronco Sport · Maverick · Lincoln MKC · Corsair" },
+                    { engine: "2.3L EcoBoost", need: ["2.3l", "ecoboost"], with: "Ford Mustang · Ranger · Bronco · Lincoln MKC" },
+                    { engine: "2.7L EcoBoost", need: ["2.7l", "ecoboost"], with: "Ford F-150 · Fusion Sport · Ranger · Bronco · Lincoln MKX · Nautilus" },
+                    { engine: "3.5L EcoBoost", need: ["3.5l", "ecoboost"], with: "Ford F-150 · Expedition · Lincoln Navigator" },
+                    { engine: "3.3L Ti-VCT", need: ["3.3l", "ti-vct"], with: "Ford F-150 (2018~)" }
+                ],
                 resetSteps: [
                     "Ignition ON(엔진 OFF) → 스티어링 휠 방향키로 클러스터 [Settings] → [Oil Life] 선택 → OK 버튼을 길게 눌러 100%로 리셋 (SYNC 장착 모델은 [Settings] → [Vehicle] → [Oil Life] 에서도 가능)"
                 ]
@@ -2614,7 +2736,11 @@
                 tirePressure: "35 ~ 36 PSI (240 ~ 250 kPa) - 도어 스티커 확인 필수",
                 wheelTorque: "100 lb-ft (135 Nm) [M12×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행(약 20 mph 이상, 10~20분)하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Lincoln Corsair · Nautilus (2.0L EcoBoost / Hybrid 계열)",
+                sharedWith: [
+                    { engine: "2.0L EcoBoost", need: ["2.0l", "ecoboost"], with: "Ford Explorer · Edge · Fusion · Focus ST · Lincoln MKC · Corsair · Nautilus" },
+                    { engine: "1.5L EcoBoost (I4)", need: ["1.5l", "ecoboost", "i4"], with: "Ford Fusion (2013~2020)" },
+                    { engine: "2.5L Duratec", need: ["2.5l", "duratec"], with: "Ford Fusion" }
+                ],
                 resetSteps: [
                     "Ignition ON(엔진 OFF) → 스티어링 휠 방향키로 클러스터 [Settings] → [Oil Life] 선택 → OK 버튼을 길게 눌러 100%로 리셋 (SYNC 장착 모델은 [Settings] → [Vehicle] → [Oil Life] 에서도 가능)"
                 ]
@@ -2638,7 +2764,11 @@
                 tirePressure: "35 PSI (240 kPa) 내외 - 도어 스티커 확인 필수",
                 wheelTorque: "100 lb-ft (135 Nm) [M12×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행(약 20 mph 이상, 10~20분)하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Lincoln MKZ (2.0T · 2.7T · 3.0T 계열)",
+                sharedWith: [
+                    { engine: "2.0L EcoBoost", need: ["2.0l", "ecoboost"], with: "Ford Explorer · Edge · Escape · Lincoln MKZ · MKC" },
+                    { engine: "1.5L EcoBoost (I4)", need: ["1.5l", "ecoboost", "i4"], with: "Ford Escape (2017~2019)" },
+                    { engine: "2.7L EcoBoost", need: ["2.7l", "ecoboost"], with: "Ford F-150 · Edge · Ranger · Bronco · Lincoln Continental" }
+                ],
                 resetSteps: [
                     "Ignition ON(엔진 OFF) → 스티어링 휠 방향키로 클러스터 [Settings] → [Oil Life] 선택 → OK 버튼을 길게 눌러 100%로 리셋 (SYNC 장착 모델은 [Settings] → [Vehicle] → [Oil Life] 에서도 가능)",
                     "구형(2011~2014): 클러스터 [Settings] → [Oil Life] → \"Hold OK to reset\" 표시 후 OK 길게 누름"
@@ -2662,7 +2792,10 @@
                 tirePressure: "35 ~ 36 PSI (240 ~ 250 kPa) - 도어 스티커 확인 필수 (적재 시 상이)",
                 wheelTorque: "약 150 lb-ft (204 Nm) [M14×1.5] - 매뉴얼 확인",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행(약 20 mph 이상, 10~20분)하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Mustang · Bronco · Explorer (2.3L EcoBoost) / F-150 · Bronco (2.7L EcoBoost)",
+                sharedWith: [
+                    { engine: "2.3L EcoBoost", need: ["2.3l", "ecoboost"], with: "Ford Mustang · Explorer · Bronco" },
+                    { engine: "2.7L EcoBoost", need: ["2.7l", "ecoboost"], with: "Ford F-150 · Bronco · Edge" }
+                ],
                 resetSteps: [
                     "Ignition ON(엔진 OFF) → 스티어링 휠 방향키로 클러스터 [Settings] → [Oil Life] 선택 → OK 버튼을 길게 눌러 100%로 리셋 (SYNC 장착 모델은 [Settings] → [Vehicle] → [Oil Life] 에서도 가능)"
                 ]
@@ -2711,7 +2844,10 @@
                 tirePressure: "35 PSI (240 kPa) Front & Rear - 도어 스티커 확인",
                 wheelTorque: "140 lb-ft (190 Nm) [M14×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Chevrolet Traverse / GMC Acadia (3.6L V6 · 2.5T 계열)",
+                sharedWith: [
+                    { engine: "3.6L LLT / LFY V6", need: ["llt"], with: "Chevrolet Traverse · GMC Acadia" },
+                    { engine: "2.5L LK0 Turbo", need: ["lk0"], with: "Chevrolet Traverse (2024~) · GMC Acadia (2024~)" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인"
                 ]
@@ -2735,7 +2871,11 @@
                 tirePressure: "35 PSI (240 kPa) Front & Rear - 도어 스티커 확인",
                 wheelTorque: "100 lb-ft (140 Nm) [M12×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Chevrolet Trax · Trailblazer · Cruze · Sonic (1.4T / 1.2T / 1.3T 계열)",
+                sharedWith: [
+                    { engine: "1.4L LUV / LUJ Turbo", need: ["luv"], with: "Chevrolet Trax · Sonic · Cruze (2011~2015)" },
+                    { engine: "1.2L LBP Turbo", need: ["lbp"], with: "Chevrolet Trailblazer · Trax (2024~)" },
+                    { engine: "1.3L L3T Turbo", need: ["l3t"], with: "Chevrolet Trailblazer" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인"
                 ]
@@ -2758,7 +2898,11 @@
                 tirePressure: "35 PSI (240 kPa) Front & Rear - 도어 스티커 확인",
                 wheelTorque: "약 100 lb-ft (140 Nm) [M12×1.5] - 매뉴얼 확인",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Chevrolet Equinox · Blazer / GMC Terrain (2.0T · 2.5L 계열)",
+                sharedWith: [
+                    { engine: "2.5L LCV", need: ["lcv"], with: "Chevrolet Colorado · GMC Canyon" },
+                    { engine: "2.0L LTG Turbo", need: ["ltg"], with: "Chevrolet Equinox · Malibu · GMC Terrain · Buick Regal · Verano" },
+                    { engine: "2.0L LSY Turbo", need: ["lsy"], with: "Chevrolet Blazer" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인"
                 ]
@@ -2782,7 +2926,12 @@
                 tirePressure: "35 PSI (240 kPa) Front & Rear - 도어 스티커 확인",
                 wheelTorque: "100 lb-ft (140 Nm) [M12×1.5]",
                 tpmsReset: "Direct TPMS: 규정 압력 주입 후 주행하면 경고등이 자동 소등됩니다. 센서 교체·타이어 로테이션 후 경고가 남으면 TPMS 학습(Relearn) 툴 또는 차종별 학습 절차가 필요합니다.",
-                sharedWith: "엔진 공유: Chevrolet Malibu · Cruze · Equinox (2.4L · 2.0T · 3.6L 계열)",
+                sharedWith: [
+                    { engine: "2.4L LAF", need: ["laf"], with: "Chevrolet Malibu · Equinox" },
+                    { engine: "2.0L LTG Turbo", need: ["ltg"], with: "Chevrolet Malibu · Equinox · Buick Envision" },
+                    { engine: "3.6L LGX V6", need: ["lgx"], with: "Chevrolet Blazer" },
+                    { engine: "3.6L LFX V6", need: ["lfx"], with: "Chevrolet Equinox · Camaro · GMC Canyon" }
+                ],
                 resetSteps: [
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인",
                     "2010~2012 구형 DIC 모델: Ignition ON → DIC 버튼으로 [Oil Life] 표시 → Set/Reset 5초 이상 유지"
@@ -4274,6 +4423,27 @@
 
         const aftermarketFilterMap = {"90915-YZZF2": "Fram PH4967 / Wix 51394 / Mobil 1 M1-103A", "90915-10003": "Fram PH4967 / Wix 51394", "90915-YZZD1": "Fram PH3614 / Wix 51348 / Mobil 1 M1-102A", "90915-YZZD3": "Fram PH3600 / Wix 51516 / Mobil 1 M1-209A", "90915-YZZN1": "Fram PH4967 / Wix 51394 / Mobil 1 M1-103A", "90915-YZZF1": "Fram PH4386 / Wix 57145 / Mobil 1 M1-103A", "04152-YZZA6": "Fram CH10358 / Wix 57064 / Mobil 1 M1C-156A", "04152-YZZA1": "Fram CH9972 / Wix 57047 / Mobil 1 M1C-251A", "04152-YZZA3": "Fram CH10158 / Wix 57173 / Mobil 1 M1C-253A", "04152-YZZA4": "Fram CH10295 / Wix 57161", "15400-PLM-A02": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15400-RTA-003": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15400-PCX-004": "Fram PH9688 / Wix 51334 (S2000/고유량 사양)", "15400-PT7-005": "Fram PH3593A / Wix 51334", "Mopar MO-090 (P/N 05281090)": "Fram PH16 / Wix 51085 / Mobil 1 M1-204A", "Mopar MO-090": "Fram PH16 / Wix 51085 / Mobil 1 M1-204A", "Fram PH16 · PH8A (Metric/SAE 어댑터 연식 확인)": "Wix 51085 (3/4-16) / Wix 51515 (PH8A 대용량)", "MO-899": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "Mopar MO-899 (P/N 04884899AC)": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "MO-339": "Fram PH10060 / Wix 57060 / Mobil 1 M1-113A", "Mopar MO-349 (P/N 68191349AC)": "Fram CH11665 / Wix WL10010 / Mobil 1 M1C-456A", "Mopar MO-349": "Fram CH11665 / Wix WL10010 / Mobil 1 M1C-456A", "MO-744": "Fram CH10955 / Wix 57526 / Mobil 1 M1C-455A", "Mopar 68229402AA": "Fram CH11794 / Wix WL10072", "B6Y1-14-302A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "PE01-14-302A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "1WPE-14-302": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "LF05-14-302B": "Fram PH3614 / Wix 51348 / Mobil 1 M1-102A", "Motorcraft FL-820S": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "L321-14-302": "Fram CH9641 / Wix 57203", "1WPY-14-302": "Fram PH12479 / Wix WL10388 (2.5T 터보 전용)", "PY8W-14-302": "Fram PH12479 / Wix WL10388 (2.5T 터보 전용)", "Motorcraft FL-400S": "Fram PH3600 / Wix 51516 / Mobil 1 M1-209A", "ZZC4-23-802": "Fram PH3600 / Wix 51516", "PX01-14-302": "Wix WL10676 (3.3L I6 전용)", "26300-35505": "Fram PH9688 / Wix 51334 / Mobil 1 M1-104A", "26300-21A00": "Fram PH3593A / Wix 51334", "26320-3C100": "Fram CH9999 / Wix 57029", "26320-3CAA0": "Fram CH10855 / Wix 57061", "26350-2M000": "Fram CH12895 / Wix WL10514", "26350-2J000": "Fram CH12978 / Wix WL10574", "26350-2S000": "Fram CH12759 / Wix WL10474", "26320-3N000": "Fram CH12977 / Wix WL10573", "26320-3C700": "Fram CH11912 / Wix WL10275", "26320-3C30A": "Fram CH10670 / Wix 57205", "15208-65F0A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "15208-65F0E": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "15208-53J0A": "Fram PH7317 / Wix 57356", "15208-9E000": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15208-55Y0A": "Fram PH3593A / Wix 51334", "ACDelco PF454": "Fram PH30 / Wix 51069 / Mobil 1 M1-202A", "PF47": "Fram PH3387A / Wix 51040 / Mobil 1 M1-101A", "ACDelco PF47": "Fram PH3387A / Wix 51040 / Mobil 1 M1-101A", "PF48": "Fram PH10060 / Wix 57060 / Mobil 1 M1-113A", "ACDelco PF63": "Fram PH10575 / Wix 57045 / Mobil 1 M1-212A", "PF66": "Fram PH12447 / Wix WL10255 / Mobil 1 M1-114A", "ACDelco PF64": "Fram PH12060 / Wix WL10290 / Mobil 1 M1-113A", "PF2262G": "Fram CH12069 / Wix WL10286", "UPF63R": "Fram PH10575 / Wix 57045", "06A115561B": "Mann W719/30 / Wix 51393 / Fram PH8873", "06D115562": "Mann HU719/6x / Wix 57187 / Fram CH10160", "06J115403Q": "Mann W719/45 / Wix 57561 / Mobil 1 M1-303A", "06K115562": "Mann HU6002z / Wix WL10024 / Fram CH11670", "071115562C": "Mann HU719/7x / Wix 57084 / Fram CH9911", "06L115562B": "Mann HU6013z / Wix WL10024 / Fram CH11670", "04E115561 계열": "Mann W712/95 / Wix WL10075 / Fram PH12222", "03H115562": "Mann HU7019z / Wix 57204 / Fram CH10323"};
 
+        // 엔진 공유 정보: 배기량과 엔진 세부사양(엔진코드·엔진명)이 모두 같은 경우만 표시.
+        // 각 줄은 need(소문자 토큰)가 이 카드의 엔진 행에 모두 포함될 때만 보입니다.
+        function sharedLinesFor(car) {
+            const sw = car.sharedWith;
+            if (!sw) return [];
+            if (typeof sw === 'string') return [{ engine: '', with: sw }];
+            const rows = (car.engineRows || []).map(e => e.text.toLowerCase());
+            const vk = car.vehicle ? car.vehicle.key : '';
+            return sw.filter(l => (!l.veh || l.veh.includes(vk)) && (!l.need || rows.some(r => l.need.every(n => r.includes(n)))));
+        }
+
+        function formatSharedHtml(car) {
+            const lines = sharedLinesFor(car);
+            if (!lines.length) return '';
+            const li = lines.map(l => `<li class="flex flex-wrap gap-x-1.5"><span class="font-semibold">${l.engine}</span><span class="text-indigo-400">→</span><span>${l.with}</span></li>`).join('');
+            return `<div class="mt-2 rounded-md border border-indigo-100 bg-indigo-50 px-2.5 py-1.5 text-xs text-indigo-800">
+                <p class="font-semibold">엔진 공유 <span class="font-normal text-indigo-500">· 배기량과 엔진 세부사양이 동일한 경우만</span></p>
+                <ul class="mt-1 space-y-0.5">${li}</ul>
+            </div>`;
+        }
+
         function formatFilterHtml(raw) {
             const cleaned = String(raw || '').trim();
             // Split top-level ' / ' outside parentheses
@@ -4507,7 +4677,7 @@
                                 ${tagHtml ? `<div class="mb-1.5">${tagHtml}</div>` : ''}
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mt-3 mb-1">엔진 <span class="normal-case font-normal">· 우측: 해당 엔진 사용 차종</span></span>
                                 <div class="flex flex-col gap-1">${engineRowsHtml}</div>
-                                ${car.sharedWith ? `<p class="mt-2 rounded-md border border-indigo-100 bg-indigo-50 px-2.5 py-1.5 text-xs font-medium text-indigo-800">${car.sharedWith}</p>` : ''}
+                                ${formatSharedHtml(car)}
                             </div>
 
                             <!-- 2. 엔진오일 & 타이어/휠 제원 그리드 -->
