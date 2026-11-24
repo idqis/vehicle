@@ -12,6 +12,36 @@
         .thin-scroll::-webkit-scrollbar-track { background: transparent; }
         .thin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
         .thin-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* ===== 카메라 바코드 스캐너: 전체 화면(몰입형) 모드 ===== */
+        body.scanner-open { overflow: hidden; touch-action: manipulation; }
+        #panel-SCANNER.scanner-immersive {
+            position: fixed !important; left: 0; top: 0; width: 100vw; height: 100vh; height: 100dvh;
+            z-index: 9999; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important;
+            background: #000 !important; display: flex !important; flex-direction: column; overflow: hidden;
+        }
+        #panel-SCANNER.scanner-immersive.hidden { display: none !important; }
+        #panel-SCANNER.scanner-immersive #scannerTopBar {
+            margin: 0 !important; padding: max(env(safe-area-inset-top), 10px) 12px 8px;
+            background: rgba(2, 6, 23, 0.92); flex: 0 0 auto;
+        }
+        /* 카메라 화면: 남는 공간을 모두 사용 */
+        #panel-SCANNER.scanner-immersive #scannerViewport {
+            flex: 1 1 0; min-height: 0; width: 100%; max-width: none !important; margin: 0 !important;
+            aspect-ratio: auto !important; border: 0 !important; border-radius: 0 !important;
+        }
+        #panel-SCANNER.scanner-immersive #scannerGuide {
+            left: 4%; right: 4%; height: clamp(110px, 24%, 240px) !important;
+        }
+        #panel-SCANNER.scanner-immersive #scannerControlsBar {
+            max-width: none !important; margin: 0 !important; border-radius: 0 !important; border-width: 1px 0 0 0 !important;
+            padding-bottom: max(env(safe-area-inset-bottom), 10px); flex: 0 0 auto;
+        }
+        /* 전체 화면에서는 제목 줄을 숨겨 카메라 영역을 더 넓게 사용 (상태 문구는 유지) */
+        #panel-SCANNER.scanner-immersive #scannerTopBar h2 { display: none; }
+        #panel-SCANNER.scanner-immersive #scannerStatus { margin-top: 0; font-size: 12px; line-height: 1.35; color: #cbd5e1; }
+        #scannerCloseBtn { display: none; }
+        #panel-SCANNER.scanner-immersive #scannerCloseBtn { display: inline-flex; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen">
@@ -81,7 +111,7 @@
 
             <!-- 탭 2: 모바일 카메라 바코드 스캔 영역 -->
             <div id="panel-SCANNER" class="hidden mt-3 bg-slate-800/90 border border-slate-700 rounded-xl p-4">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                <div id="scannerTopBar" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                     <div>
                         <h2 class="text-sm font-bold text-white flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -90,6 +120,7 @@
                         <p id="scannerStatus" class="text-xs text-slate-400 mt-0.5">카메라를 켜고 차량 VIN 바코드(Code 39 / Code 128)를 프레임 안에 맞추세요.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        <button type="button" onclick="closeScannerPanel()" id="scannerCloseBtn" class="items-center bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition">✕ 닫기</button>
                         <button onclick="startBarcodeScanner()" id="startScanBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition">카메라 시작</button>
                         <button onclick="stopBarcodeScanner()" id="stopScanBtn" class="hidden bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition">카메라 중지</button>
                         <button onclick="switchCameraDevice()" id="switchCamBtn" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition" title="후면 카메라 렌즈 전환">렌즈 전환</button>
@@ -3022,6 +3053,161 @@
             if (shouldRender) renderCards();
         }
 
+
+        /**
+         * ============================================================================
+         * 스캐너 전체 화면 + 화면 방향 고정
+         *  1) 전체 화면을 요청한 뒤 screen.orientation.lock('portrait') 로 브라우저/OS 수준에서 세로 고정 (Android Chrome 등)
+         *  2) 고정이 불가능한 환경(iPhone Safari 등)에서는 화면이 가로로 돌아가면 UI를 반대로 회전시켜
+         *     휴대폰 본체 기준으로 항상 같은 배치를 유지 (소프트 고정). 카메라 영상은 실제 풍경처럼 똑바로 유지.
+         * ============================================================================
+         */
+        let scannerImmersive = false;
+        let scannerHomeMarker = null;   // 패널을 body로 옮기기 전의 원래 위치 표시
+        let scannerSoftAngle = 0;       // 소프트 고정으로 되돌리고 있는 회전각(0/90/180/270)
+        let scannerHardLocked = false;  // screen.orientation.lock 성공 여부
+
+        function getDocOrientationAngle() {
+            if (typeof window.__scannerAngleOverride === 'number') return window.__scannerAngleOverride; // 테스트용
+            let a = 0;
+            if (screen.orientation && typeof screen.orientation.angle === 'number') a = screen.orientation.angle;
+            else if (typeof window.orientation === 'number') a = window.orientation;
+            return ((a % 360) + 360) % 360;
+        }
+
+        function applyScannerSoftLock() {
+            const panel = document.getElementById('panel-SCANNER');
+            const video = document.getElementById('scannerVideo');
+            const guide = document.getElementById('scannerGuide');
+            const viewport = document.getElementById('scannerViewport');
+            if (!panel || !video || !guide || !viewport) return;
+
+            const resetStyles = () => {
+                ['width', 'height', 'left', 'top', 'right', 'bottom', 'transform', 'transformOrigin'].forEach(k => {
+                    panel.style[k] = '';
+                    video.style[k] = '';
+                    guide.style[k] = '';
+                });
+                video.style.position = '';
+                guide.style.position = '';
+                guide.style.insetInline = '';
+            };
+
+            const W = window.innerWidth, H = window.innerHeight;
+            const angle = getDocOrientationAngle();
+            const phoneLandscape = (angle === 90 || angle === 270) && W > H;   // 폰(본래 세로형)이 가로로 돌아간 상태
+            const upsideDown = angle === 180 && H >= W;
+
+            if (!scannerImmersive || (!phoneLandscape && !upsideDown)) {
+                scannerSoftAngle = 0;
+                resetStyles();
+                return;
+            }
+
+            scannerSoftAngle = angle;
+            // 패널: 세로 크기로 만든 뒤 화면 정중앙에서 반대로 회전 -> 휴대폰 본체 기준 레이아웃 유지
+            const pw = phoneLandscape ? H : W;
+            const ph = phoneLandscape ? W : H;
+            panel.style.left = '50%';
+            panel.style.top = '50%';
+            panel.style.width = pw + 'px';
+            panel.style.height = ph + 'px';
+            panel.style.transformOrigin = '50% 50%';
+            panel.style.transform = `translate(-50%, -50%) rotate(${-angle}deg)`;
+
+            // 카메라 영상과 가이드 박스는 다시 +angle 만큼 돌려 "창문처럼" 실제 풍경 기준으로 똑바로 보이게 함
+            const vw = viewport.clientWidth;
+            const vh = viewport.clientHeight;
+            if (phoneLandscape) {
+                video.style.position = 'absolute';
+                video.style.left = '50%';
+                video.style.top = '50%';
+                video.style.width = vh + 'px';
+                video.style.height = vw + 'px';
+                video.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+
+                guide.style.insetInline = 'auto';
+                guide.style.left = '50%';
+                guide.style.top = '50%';
+                guide.style.right = 'auto';
+                guide.style.width = Math.round(vh * 0.86) + 'px';
+                guide.style.height = Math.round(Math.min(240, Math.max(110, vw * 0.30))) + 'px';
+                guide.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+            } else {
+                video.style.transform = `rotate(${angle}deg)`;
+                guide.style.transform = `translateY(-50%) rotate(${angle}deg)`;
+            }
+        }
+
+        async function lockScannerOrientation(panel) {
+            scannerHardLocked = false;
+            // 일부 브라우저는 전체 화면일 때만 방향 고정을 허용하므로 전체 화면을 먼저 요청 (사용자 터치 직후에만 가능)
+            try {
+                if (!document.fullscreenElement && panel.requestFullscreen) {
+                    await panel.requestFullscreen({ navigationUI: 'hide' });
+                }
+            } catch (e) { /* 전체 화면 미지원/거부: 소프트 고정으로 대체 */ }
+            try {
+                if (screen.orientation && typeof screen.orientation.lock === 'function') {
+                    await screen.orientation.lock('portrait');
+                    scannerHardLocked = true;
+                }
+            } catch (e) { scannerHardLocked = false; }
+            applyScannerSoftLock();
+        }
+
+        function enterScannerImmersive() {
+            const panel = document.getElementById('panel-SCANNER');
+            if (!panel || scannerImmersive) return;
+            scannerImmersive = true;
+
+            // 헤더(sticky) 안에서는 화면 전체를 덮기 어려우므로 body 로 옮겼다가 닫을 때 원위치
+            scannerHomeMarker = document.createComment('scanner-home');
+            panel.parentNode.insertBefore(scannerHomeMarker, panel);
+            document.body.appendChild(panel);
+
+            panel.classList.add('scanner-immersive');
+            document.body.classList.add('scanner-open');
+            lockScannerOrientation(panel);      // 사용자 터치 직후 동기 호출이어야 전체 화면 요청이 허용됨
+            applyScannerSoftLock();
+        }
+
+        function exitScannerImmersive() {
+            const panel = document.getElementById('panel-SCANNER');
+            if (!panel || !scannerImmersive) return;
+            scannerImmersive = false;
+
+            try { if (screen.orientation && typeof screen.orientation.unlock === 'function') screen.orientation.unlock(); } catch (e) {}
+            try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); } catch (e) {}
+            scannerHardLocked = false;
+            applyScannerSoftLock();             // 인라인 회전 스타일 초기화
+
+            panel.classList.remove('scanner-immersive');
+            document.body.classList.remove('scanner-open');
+            if (scannerHomeMarker && scannerHomeMarker.parentNode) {
+                scannerHomeMarker.parentNode.insertBefore(panel, scannerHomeMarker);
+                scannerHomeMarker.remove();
+            }
+            scannerHomeMarker = null;
+        }
+
+        function closeScannerPanel() {
+            setInputTab('SEARCH');
+        }
+
+        ['resize', 'orientationchange'].forEach(ev => window.addEventListener(ev, () => {
+            applyScannerSoftLock();
+            setTimeout(applyScannerSoftLock, 120);   // iOS 등에서 회전 직후 innerWidth/Height 가 늦게 갱신되는 경우 대비
+            setTimeout(applyScannerSoftLock, 350);
+        }, { passive: true }));
+        if (screen.orientation && screen.orientation.addEventListener) {
+            screen.orientation.addEventListener('change', () => {
+                applyScannerSoftLock();
+                setTimeout(applyScannerSoftLock, 150);
+            });
+        }
+        document.addEventListener('fullscreenchange', applyScannerSoftLock);
+
         function setInputTab(tabName) {
             const searchTab = document.getElementById('tab-SEARCH');
             const scannerTab = document.getElementById('tab-SCANNER');
@@ -3033,13 +3219,15 @@
                 searchTab.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5';
                 searchPanel.classList.add('hidden');
                 scannerPanel.classList.remove('hidden');
+                enterScannerImmersive();      // 전체 화면 + 방향 고정 (터치 직후 동기 호출)
                 startBarcodeScanner();
             } else {
                 searchTab.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-700 text-white transition flex items-center gap-1.5';
                 scannerTab.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5';
+                stopBarcodeScanner();
+                exitScannerImmersive();
                 scannerPanel.classList.add('hidden');
                 searchPanel.classList.remove('hidden');
-                stopBarcodeScanner();
             }
         }
 
@@ -3222,9 +3410,21 @@
             const viewport = document.getElementById('scannerViewport');
             const focusRing = document.getElementById('focusRing');
             if (viewport && focusRing) {
-                const rect = viewport.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
+                let x, y;
+                if (scannerSoftAngle) {
+                    // 패널이 -angle 만큼 회전되어 있으므로 화면 좌표를 패널 내부 좌표로 역변환
+                    const W = window.innerWidth, H = window.innerHeight;
+                    const sw = scannerSoftAngle === 180 ? W : H;
+                    const sh = scannerSoftAngle === 180 ? H : W;
+                    const dx = event.clientX - W / 2, dy = event.clientY - H / 2;
+                    const a = scannerSoftAngle * Math.PI / 180;
+                    x = dx * Math.cos(a) - dy * Math.sin(a) + sw / 2 - viewport.offsetLeft;
+                    y = dx * Math.sin(a) + dy * Math.cos(a) + sh / 2 - viewport.offsetTop;
+                } else {
+                    const rect = viewport.getBoundingClientRect();
+                    x = event.clientX - rect.left;
+                    y = event.clientY - rect.top;
+                }
                 focusRing.style.left = `${x}px`;
                 focusRing.style.top = `${y}px`;
                 focusRing.classList.remove('hidden');
