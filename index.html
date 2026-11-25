@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>North America VIN & Service Spec Guide (1981–Present · 14 Brands)</title>
+    <title>North America VIN & Service Spec Guide (1981–Present · 16 Brands)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
@@ -47,7 +47,7 @@
 <body class="bg-slate-100 text-slate-800 min-h-screen">
 
     <!-- 상단 헤더 & 검색/히스토리/스캔 영역 -->
-    <header class="bg-slate-900 text-white sticky top-0 z-20 shadow-md">
+    <header id="searchHeader" class="bg-slate-900 text-white sticky top-0 z-20 shadow-md transition-transform duration-300 ease-out will-change-transform">
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div>
@@ -2967,6 +2967,233 @@
                     "Ignition ON → 스티어링 휠 방향키로 클러스터 [Vehicle Info] → [Oil Life] 항목 선택 → Set/Reset(✓) 버튼을 길게 눌러 100% 확인",
                     "2010~2012 구형 DIC 모델: Ignition ON → DIC 버튼으로 [Oil Life] 표시 → Set/Reset 5초 이상 유지"
                 ]
+            },
+            // =====================================================================
+            // 15. BMW (North America · 1981 ~ Present)
+            // 주의: BMW는 엔진 코드·생산월·구동방식에 따라 소모품 및 정비값이 크게 달라집니다.
+            // VIN 기준으로 부품번호와 체결 토크를 최종 확인하도록 안내합니다.
+            // =====================================================================
+            {
+                brand: "BMW",
+                model: "[세단/쿠페/투어링] 3 Series (E21~G20/G50) / 4 Series (F32~G22) (1981~현재)",
+                keywords: ["bmw", "3 series", "3-series", "320i", "323i", "325i", "328i", "330i", "335i", "340i", "m340i", "4 series", "4-series", "420i", "430i", "440i", "m440i", "n20", "n26", "n52", "n54", "n55", "b46", "b48", "b58"],
+                displacement: [1.6, 1.8, 2.0, 2.5, 2.8, 3.0],
+                isTurbo: true,
+                isHybrid: false,
+                yearRange: [1981, 2027],
+                year: "1981 ~ 현재",
+                engine: "세대별 I4/I6 가솔린·디젤: M20/M50/M52/M54 · N20/N26/N52/N54/N55 · B46/B48/B58 (모델·연식별 상이)",
+                oilSpec: "BMW Longlife 승인 오일 사용 필수: LL-01 / LL-04 / LL-12 FE / LL-17 FE+ 등 엔진·연식별 상이. 점도는 오일 캡 및 차량 매뉴얼 우선",
+                capacity: "엔진별 상이 (대략 4.5 ~ 7.0 L 범위). 정확한 용량은 VIN·엔진 코드별 정비자료 확인",
+                filterPartNo: "BMW 순정 오일 필터 엘리먼트: 엔진 코드·생산월별 상이 — VIN으로 부품번호 확인 필수",
+                drainPlugTorque: "엔진·오일팬·플러그 형식별 상이 — 해당 VIN의 BMW 정비자료(TIS/AIR) 확인 필수",
+                tireSize: "205/55R16 · 225/45R17 · 225/40R18 · 225/40R19 등 (휠·런플랫·전후륜 규격별 상이)",
+                tirePressure: "도어 잼/운전석 도어 필러의 냉간 공기압 라벨 및 iDrive 타이어 설정값 우선",
+                wheelTorque: "휠·볼트 규격별 확인 필요 — 해당 차량의 BMW 사용 설명서 기준 적용",
+                tpmsReset: "TPMS(RDC): 냉간 공기압을 규정값으로 맞춘 뒤 iDrive [Vehicle Status] → [Tire Pressure Monitor] → [Perform Reset/Reset] (세대별 메뉴 명칭 상이). 주행 후 학습 완료 여부 확인",
+                resetSteps: [
+                    "차량 전원 ON → iDrive [Vehicle Status] 또는 [Car] → [Vehicle Status] → [Engine Oil] / [Service Requirements] 진입",
+                    "오일 서비스 항목 선택 → [Reset] 실행 후 계기판/iDrive에 리셋 완료가 표시되는지 확인",
+                    "메뉴 구성은 iDrive 세대·연식에 따라 다르며, 리셋이 불가능하면 BMW 진단기 또는 호환 스캔 툴 사용"
+                ]
+            },
+            {
+                brand: "BMW",
+                model: "[중형/대형 세단] 5 Series (E12~G60) / 6 Series / 7 Series (1981~현재)",
+                keywords: ["bmw", "5 series", "5-series", "520i", "523i", "525i", "528i", "530i", "535i", "540i", "550i", "m550i", "6 series", "6-series", "7 series", "7-series", "740i", "750i", "760i", "n20", "n52", "n54", "n55", "n63", "b48", "b58", "b58tu", "s63"],
+                displacement: [2.0, 2.5, 2.8, 3.0, 4.0, 4.4, 6.0],
+                isTurbo: true,
+                isHybrid: false,
+                yearRange: [1981, 2027],
+                year: "1981 ~ 현재",
+                engine: "세대별 I4/I6/V8/V12: M30/M50/M52/M54 · N52/N54/N55 · N63/S63 · B48/B58 및 플러그인 하이브리드 파생형 (모델별 상이)",
+                oilSpec: "BMW Longlife 승인 오일(LL-01/LL-04/LL-17 FE+ 등) 중 해당 엔진 승인 규격 사용. 오일 캡·차량 매뉴얼 우선",
+                capacity: "엔진별 상이 (대략 5.0 ~ 9.0 L 범위). VIN·엔진 코드별 정비자료 확인",
+                filterPartNo: "BMW 순정 오일 필터 엘리먼트: 엔진 코드·생산월별 상이 — VIN 조회 필수",
+                drainPlugTorque: "오일팬 재질·플러그 형식별 상이 — BMW VIN별 정비 토크 확인 필수",
+                tireSize: "225/55R17 · 245/45R18 · 245/40R19 등 (세대·트림·전후륜 규격별 상이)",
+                tirePressure: "운전석 도어 필러/도어 잼의 냉간 공기압 라벨 및 iDrive 기준값 우선",
+                wheelTorque: "차량별 휠 볼트 규격과 휠 사양 확인 후 BMW 사용 설명서 기준 적용",
+                tpmsReset: "TPMS(RDC): 규정 냉간 공기압 설정 후 iDrive [Vehicle Status] → [Tire Pressure Monitor] → [Reset/Perform Reset]. 주행하며 센서 학습 완료 확인",
+                resetSteps: [
+                    "차량 전원 ON → iDrive [Vehicle Status] → [Service Requirements] 또는 [Engine Oil] 선택",
+                    "[Reset]을 실행하고 계기판/iDrive의 서비스 주기 초기화 완료 메시지 확인",
+                    "세대별 메뉴·조작 방식이 다르므로 해당 연식 사용 설명서 확인"
+                ]
+            },
+            {
+                brand: "BMW",
+                model: "[SUV/SAV] X1 / X3 / X4 (E84~U11, F25~G45) (2009~현재)",
+                keywords: ["bmw", "x1", "x3", "x4", "sdrive", "xdrive", "28i", "30i", "35i", "m40i", "18d", "20d", "n20", "n26", "n47", "b47", "b48", "b58"],
+                displacement: [1.5, 1.6, 2.0, 2.5, 3.0],
+                isTurbo: true,
+                isHybrid: true,
+                yearRange: [2009, 2027],
+                year: "2009 ~ 현재",
+                engine: "I3/I4/I6 가솔린·디젤 및 PHEV: N20/N26/N47 · B47/B48/B58 등 (세대·시장·트림별 상이)",
+                oilSpec: "BMW Longlife 승인 규격(LL-01/LL-04/LL-17 FE+ 등)과 점도는 엔진·연식별 상이 — 오일 캡/매뉴얼 확인",
+                capacity: "엔진별 상이 (대략 4.5 ~ 7.0 L 범위). VIN별 용량 확인 필수",
+                filterPartNo: "BMW 순정 필터 엘리먼트: 엔진 코드·생산월별 상이 — VIN으로 조회",
+                drainPlugTorque: "차량별 오일팬·플러그 형식에 따라 상이 — BMW 정비자료 확인",
+                tireSize: "225/60R17 · 225/55R18 · 245/50R19 · 245/45R20 등 (트림·휠별 상이)",
+                tirePressure: "운전석 도어 라벨의 냉간 공기압 및 iDrive 지정값 우선",
+                wheelTorque: "차량·휠 사양별 상이 — 해당 차량 사용 설명서 확인",
+                tpmsReset: "TPMS(RDC): 냉간 공기압을 라벨 기준으로 조정한 뒤 iDrive [Vehicle Status] → [Tire Pressure Monitor] → [Reset]. 주행 후 학습 완료 확인",
+                resetSteps: [
+                    "차량 전원 ON → iDrive [Vehicle Status] → [Service Requirements] → [Engine Oil] 선택",
+                    "[Reset] 실행 후 서비스 리셋 완료 메시지 확인",
+                    "TPMS는 공기압 조정 후 [Tire Pressure Monitor]에서 별도로 초기화"
+                ]
+            },
+            {
+                brand: "BMW",
+                model: "[중대형 SUV/SAV] X5 / X6 / X7 (E53~G05/G06/G07) (2000~현재)",
+                keywords: ["bmw", "x5", "x6", "x7", "30i", "35i", "40i", "50i", "m50i", "m60i", "xdrive", "n52", "n55", "n63", "b58", "s63", "b57", "diesel"],
+                displacement: [3.0, 4.4, 4.8, 6.0],
+                isTurbo: true,
+                isHybrid: true,
+                yearRange: [2000, 2027],
+                year: "2000 ~ 현재",
+                engine: "I6/V8/V12 및 디젤·PHEV: M54/N52/N55 · N63/S63 · B58/B57 등 (세대·트림별 상이)",
+                oilSpec: "BMW Longlife 승인 오일(LL-01/LL-04/LL-17 FE+ 등) 중 해당 엔진 지정 규격 사용",
+                capacity: "엔진별 상이 (대략 6.0 ~ 10.0 L 범위). 정확한 주입량은 VIN·엔진 코드 확인",
+                filterPartNo: "BMW 순정 오일 필터 엘리먼트: 엔진 코드·생산월별 상이 — VIN 조회 필수",
+                drainPlugTorque: "엔진·오일팬·플러그 형식별 상이 — BMW VIN별 정비자료 확인 필수",
+                tireSize: "255/55R18 · 255/50R19 · 275/45R20 · 전후륜 staggered 규격 등 (트림별 상이)",
+                tirePressure: "운전석 도어 필러 라벨 및 iDrive 타이어 설정값 우선. 적재량·고속 주행 조건에 따라 달라질 수 있음",
+                wheelTorque: "휠·볼트 규격별 확인 필요 — BMW 사용 설명서 기준 적용",
+                tpmsReset: "TPMS(RDC): 냉간 공기압을 차량 라벨 기준으로 조정한 뒤 iDrive [Vehicle Status] → [Tire Pressure Monitor] → [Reset/Perform Reset]. 주행 후 학습 완료 확인",
+                resetSteps: [
+                    "차량 전원 ON → iDrive [Vehicle Status] → [Service Requirements] 또는 [Engine Oil] 선택",
+                    "[Reset] 실행 후 계기판/iDrive에 리셋 완료 메시지가 표시되는지 확인",
+                    "TPMS 초기화는 [Tire Pressure Monitor]에서 별도로 실행하고 주행 후 학습 상태 확인"
+                ]
+            },
+            // =====================================================================
+            // 16. MERCEDES-BENZ (North America · 1981 ~ Present)
+            // =====================================================================
+            {
+                brand: "MERCEDES-BENZ",
+                model: "[세단/쿠페/카브리올레] C-Class (W201~W206) / CLA / CLK (1984~현재)",
+                engineUse: [["C-Class", "CLA"], ["C-Class", "CLK"], ["C-Class", "CLK"], ["C-Class"]],
+                keywords: ["mercedes", "mercedes-benz", "benz", "c-class", "c class", "190e", "c220", "c230", "c240", "c250", "c280", "c300", "c320", "c350", "cla", "cla250", "clk", "clk320", "clk350", "w201", "w202", "w203", "w204", "w205", "w206", "m271", "m272", "m274", "m264", "m254"],
+                displacement: [2.0, 2.5, 3.0, 3.5],
+                isTurbo: true,
+                isHybrid: false,
+                yearRange: [1984, 2027],
+                year: "1984 ~ 현재",
+                engine: "1.8L/2.0L Turbo (M271 · M274 · M264 · M254 MHEV) · 2.5L/2.8L/3.0L/3.2L/3.5L V6 (M112 · M272 · M276) · 구형 I4/I6 (M102 · M103 · M104)",
+                oilSpec: "MB-Approval 229.5 (5W-40 / 0W-40, M272·M274·M276) / MB 229.51 · 229.52 (5W-30 / 0W-30) / MB 229.71 · 229.72 (0W-20, M264·M254 최신형 — 오일 캡·매뉴얼 우선)",
+                capacity: "5.5 ~ 8.0 L [2.0T M274/M264: 6.0 ~ 7.0 L / 3.0·3.5L V6 M272/M276: 6.5 ~ 8.0 L / 딥스틱·계기판 레벨 확인 필수]",
+                filterPartNo: "A2701800109 (M274/M264 2.0T) / A2761800009 (M276 V6) / A0001802609 (M112/M272 V6) / A2541840600 (M254 — VIN 조회 필수)",
+                drainPlugTorque: "약 18 ~ 22 lb-ft (25 ~ 30 Nm) [알루미늄 팬 M12/M14 드레인 볼트 크러시 와셔 교체 · 플라스틱 팬 쿼터턴 플러그는 신품 교체]",
+                tireSize: "205/55R16 · 225/45R17 · 225/45R18 (Front) / 245/40R18 (Rear) · 225/40R19 (세단·트림별 상이)",
+                tirePressure: "32 ~ 39 PSI (220 ~ 270 kPa - 운전석 B필러 라벨 및 연료 주입구 도어 스티커 확인 필수)",
+                wheelTorque: "81 ~ 96 lb-ft (110 ~ 130 Nm) [구형 W201~W203 M12×1.5: 81 lb-ft (110 Nm) / W204~W206 M14×1.5: 96 lb-ft (130 Nm)]",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 계기판 [Service] → [Tire Pressure] → [Use Current Pressures as New Reference Values] → [Yes] 선택 후 주행.",
+                sharedWith: [
+                    { engine: "2.0L M274 / M264 Turbo", need: ["m274"], with: "Mercedes-Benz E 300 / E 350 · GLC 300" },
+                    { engine: "3.5L M276 V6", need: ["m276"], with: "Mercedes-Benz E 350 · GLK 350 · ML 350 · GLE 350" }
+                ],
+                resetSteps: [
+                    "ASSYST PLUS 워크샵 메뉴 진입: 도어 닫힘 · 시동 1단(ACC) 상태에서 계기판 기본(주행거리) 화면 표시",
+                    "[W204 / 초기 W205] 스티어링 휠 [통화(수화기)] 버튼 + [OK] 버튼을 동시에 약 5초 길게 누름 → [ASSYST PLUS] 진입 → [Full Service] → [Confirm Full Service] → [Yes]",
+                    "[후기 W205 / W206 터치패드] 시동 1단에서 좌측 [뒤로가기(Back)] + [터치패드(OK)] 동시 5초 유지 → [ASSYST PLUS] → [Full Service] → [Confirm]"
+                ]
+            },
+            {
+                brand: "MERCEDES-BENZ",
+                model: "[중형/대형 세단] E-Class (W123~W214) / S-Class (W126~W223) / CLS (1981~현재)",
+                keywords: ["mercedes", "mercedes-benz", "benz", "e-class", "e class", "300e", "e300", "e320", "e350", "e400", "e450", "e500", "e550", "s-class", "s class", "s320", "s420", "s430", "s500", "s550", "s560", "s580", "cls", "cls450", "cls550", "w124", "w210", "w211", "w212", "w213", "w214", "w220", "w221", "w222", "w223", "m112", "m113", "m272", "m273", "m276", "m278", "m256", "m176"],
+                displacement: [2.0, 3.0, 3.2, 3.5, 4.7, 5.0, 5.5],
+                isTurbo: true,
+                isHybrid: true,
+                yearRange: [1981, 2027],
+                year: "1981 ~ 현재",
+                engine: "2.0L M274/M264/M254 Turbo · 3.0L/3.5L V6 (M112 · M272 · M276) · 3.0L M256 I6 Turbo (48V MHEV) · 4.7L/5.5L/4.0L V8 (M113 · M273 · M278 · M176)",
+                oilSpec: "MB-Approval 229.5 (5W-40 / 0W-40) / MB 229.51 · 229.52 (5W-30 / 0W-30) / MB 229.71 · 229.72 (0W-20, M264·M254·M256 최신형 — 오일 캡·매뉴얼 확인 필수)",
+                capacity: "6.0 ~ 9.5 L [2.0T: 6.0 ~ 7.0 L / 3.5L V6 M276: 6.5 L / 3.0L I6 M256: 8.0 ~ 8.5 L / 4.7T·4.0T V8: 8.0 ~ 9.5 L]",
+                filterPartNo: "A2701800109 (2.0T) / A2761800009 (M276 V6 / M278 V8) / A2561840000 (M256 I6) / A0001802609 (M112/M113/M272/M273)",
+                drainPlugTorque: "약 18 ~ 22 lb-ft (25 ~ 30 Nm) [알루미늄 팬 볼트 크러시 와셔 교체 · 복합소재 팬 쿼터턴 플러그는 신품 교체]",
+                tireSize: "225/55R16 · 245/45R17 · 245/45R18 · 245/40R19 (Front) / 275/35R19 (Rear) · 255/45R19 (S-Class)",
+                tirePressure: "32 ~ 41 PSI (220 ~ 280 kPa - 연료 주입구 도어 스티커 및 B필러 라벨 확인 필수)",
+                wheelTorque: "81 ~ 111 lb-ft (110 ~ 150 Nm) [W124/W210 M12: 81 lb-ft / W211~W214 M14: 96 lb-ft (130 Nm) / S-Class W221~W223: 111 lb-ft (150 Nm)]",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 계기판 [Service] → [Tire Pressure] → [Use Current Pressures as New Reference Values] → [Yes] 선택 후 주행.",
+                resetSteps: [
+                    "시동 1단(ACC) 상태에서 계기판 기본 주행거리 화면 표시 (도어 닫힘)",
+                    "스티어링 휠 [통화(수화기)] + [OK] (또는 최신형 좌측 [Back] + [터치패드 OK]) 동시 5초 유지 → [ASSYST PLUS] → [Full Service] → [Confirm Full Service] → [Yes]"
+                ]
+            },
+            {
+                brand: "MERCEDES-BENZ",
+                model: "[컴팩트·중형 SUV] GLA / GLB / GLK / GLC (X156~X254, X204) (2010~현재)",
+                engineUse: [["GLK", "GLC"], ["GLA", "GLB", "GLC"]],
+                keywords: ["mercedes", "mercedes-benz", "benz", "gla", "gla250", "glb", "glb250", "glk", "glk350", "glk250", "glc", "glc300", "glc350e", "x204", "x253", "x254", "x156", "h247", "x247", "m276", "m274", "m260", "m264", "m254"],
+                displacement: [3.5, 2.0],
+                isTurbo: true,
+                isHybrid: false,
+                yearRange: [2010, 2027],
+                year: "2010 ~ 현재",
+                engine: "3.5L V6 (M272 · M276, GLK 350) · 2.0L Turbo (M270/M260 GLA·GLB / M274/M264/M254 MHEV GLC 300)",
+                oilSpec: "MB-Approval 229.5 (5W-40 / 0W-40, GLK350 · 초기 GLC300) / MB 229.51 · 229.52 (5W-30 / 0W-30) / MB 229.71 · 229.72 (0W-20, M260·M264·M254 최신형)",
+                capacity: "5.5 ~ 7.0 L [GLA/GLB 2.0T: 5.5 L / GLC 300 2.0T: 6.0 ~ 7.0 L / GLK 350 3.5L V6: 6.5 ~ 8.0 L]",
+                filterPartNo: "A2701800109 (M270/M260/M274/M264 2.0T) / A2761800009 (GLK 350 M276 V6) / A2541840600 (M254)",
+                drainPlugTorque: "약 18 ~ 22 lb-ft (25 ~ 30 Nm) [알루미늄 팬 볼트 와셔 교체 · 플라스틱 팬 쿼터턴 플러그는 신품 교체]",
+                tireSize: "235/60R17 · 235/50R19 (GLA/GLB/GLK) · 235/60R18 · 235/55R19 · 255/45R20 (GLC)",
+                tirePressure: "32 ~ 39 PSI (220 ~ 270 kPa - 운전석 B필러 라벨 및 연료 주입구 스티커 확인 필수)",
+                wheelTorque: "96 ~ 111 lb-ft (130 ~ 150 Nm) [GLA/GLB/GLK: 96 lb-ft (130 Nm) / GLC X253·X254: 111 lb-ft (150 Nm)]",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 계기판 [Service] → [Tire Pressure] → [Use Current Pressures as New Reference Values] → [Yes] 선택 후 주행.",
+                resetSteps: [
+                    "시동 1단(ACC) 상태에서 계기판 기본 주행거리 화면 표시 (도어 닫힘)",
+                    "스티어링 휠 [통화(수화기)] + [OK] (또는 최신형 좌측 [Back] + [터치패드 OK]) 동시 5초 유지 → [ASSYST PLUS] → [Full Service] → [Confirm Full Service] → [Yes]"
+                ]
+            },
+            {
+                brand: "MERCEDES-BENZ",
+                model: "[중대형 SUV] ML / GLE (W163~W167) / GL / GLS (X164~X167) (1998~현재)",
+                keywords: ["mercedes", "mercedes-benz", "benz", "ml", "ml320", "ml350", "ml430", "ml500", "ml550", "gle", "gle350", "gle400", "gle450", "gle580", "gl", "gl450", "gl550", "gls", "gls450", "gls550", "gls580", "w163", "w164", "w166", "w167", "x164", "x166", "x167", "m112", "m272", "m276", "m278", "m264", "m256", "m176"],
+                displacement: [2.0, 3.0, 3.5, 4.7, 5.5],
+                isTurbo: true,
+                isHybrid: true,
+                yearRange: [1998, 2027],
+                year: "1998 ~ 현재",
+                engine: "2.0L M264 Turbo (GLE 350 W167) · 3.5L V6 (M112 · M272 · M276, ML/GLE 350) · 3.0L V6/I6 Turbo (M276 TT · M256 48V MHEV, GLE/GLS 450) · 4.7L/5.5L/4.0L V8 (M273 · M278 · M176)",
+                oilSpec: "MB-Approval 229.5 (5W-40 / 0W-40) / MB 229.51 · 229.52 (5W-30 / 0W-30) / MB 229.71 · 229.72 (0W-20, M264·M256 최신형 — 오일 캡·매뉴얼 우선)",
+                capacity: "6.0 ~ 9.5 L [GLE 350 2.0T M264: 6.0 ~ 6.5 L / ML·GLE 350 3.5L V6: 6.5 ~ 8.0 L / GLE·GLS 450 3.0L I6 M256: 8.5 L / V8: 8.5 ~ 9.5 L]",
+                filterPartNo: "A2701800109 (GLE 350 2.0T) / A2761800009 (M276 V6 / M278 V8) / A2561840000 (M256 I6) / A0001802609 (M112/M272/M273)",
+                drainPlugTorque: "약 18 ~ 22 lb-ft (25 ~ 30 Nm) [알루미늄 팬 볼트 와셔 교체 · 복합소재 팬 쿼터턴 플러그는 신품 교체]",
+                tireSize: "255/55R18 · 255/50R19 · 265/45R20 · 275/50R20 · 275/45R21 (Front) / 315/40R21 (Rear)",
+                tirePressure: "32 ~ 41 PSI (220 ~ 280 kPa - 운전석 B필러 라벨 및 연료 주입구 스티커 확인 필수, 만재 시 후륜 상향)",
+                wheelTorque: "111 lb-ft (150 Nm) [M14×1.5 볼트 · W163 구형 일부 96 lb-ft (130 Nm)]",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 계기판 [Service] → [Tire Pressure] → [Use Current Pressures as New Reference Values] → [Yes] 선택 후 주행.",
+                resetSteps: [
+                    "시동 1단(ACC) 상태에서 계기판 기본 주행거리 화면 표시 (도어 닫힘)",
+                    "스티어링 휠 [통화(수화기)] + [OK] (또는 MBUX 최신형 좌측 [Back] + [터치패드 OK]) 동시 5초 유지 → [ASSYST PLUS] → [Full Service] → [Confirm Full Service] → [Yes]"
+                ]
+            },
+            {
+                brand: "MERCEDES-BENZ",
+                model: "[상용·캠퍼밴] Sprinter (2500 / 3500) / Metris (2003~현재)",
+                engineUse: [["Sprinter"], ["Sprinter"], ["Sprinter", "Metris"]],
+                keywords: ["mercedes", "mercedes-benz", "benz", "sprinter", "sprinter 2500", "sprinter 3500", "metris", "dodge sprinter", "freightliner sprinter", "om647", "om642", "om651", "om654", "m274", "2.7", "3.0", "2.1", "2.0"],
+                displacement: [2.7, 3.0, 2.0],
+                isTurbo: true,
+                isHybrid: false,
+                yearRange: [2003, 2027],
+                year: "2003 ~ 현재",
+                engine: "2.7L OM647 / 3.0L OM642 V6 Turbo Diesel · 2.1L OM651 / 2.0L OM654 Twin-Turbo Diesel · 2.0L M274 Gasoline Turbo (Sprinter · Metris)",
+                oilSpec: "디젤(DPF): MB-Approval 229.51 / 229.52 (5W-30 / 0W-30 저회분 필수) · 가솔린(M274): MB 229.5 (5W-40 / 0W-40)",
+                capacity: "8.5 ~ 12.5 L [2.0T 가솔린 M274: 8.5 ~ 9.0 L / 2.0L·2.1L 디젤 OM654·OM651: 9.0 ~ 11.5 L / 3.0L V6 디젤 OM642: 12.5 L]",
+                filterPartNo: "A6421800009 (OM642 3.0L V6 디젤) / A6511800109 (OM651 2.1L 디젤) / A6541801100 (OM654 2.0L 디젤) / A2701800109 (M274 2.0T 가솔린)",
+                drainPlugTorque: "약 18 ~ 22 lb-ft (25 ~ 30 Nm) [크러시 와셔 신품 교체 필수]",
+                tireSize: "LT245/75R16 (Sprinter 2500) · LT215/85R16 Dual (Sprinter 3500) · 225/55R17 (Metris)",
+                tirePressure: "Sprinter: 전륜 47~55 PSI / 후륜 61~70 PSI (적재·듀얼 휠 사양별 상이, B필러 스티커 필수 확인) · Metris: 38~42 PSI",
+                wheelTorque: "133 ~ 177 lb-ft (180 ~ 240 Nm) [Sprinter 2500 스틸/알로이: 133~177 lb-ft (180~240 Nm) / Metris: 111 lb-ft (150 Nm) — 매뉴얼 확인]",
+                tpmsReset: "Direct TPMS: B필러 기준 냉간 공기압 주입 후 계기판 [Service] → [Tire Pressure] → [Use Current Pressures as New Reference Values] 실행 후 주행.",
+                resetSteps: [
+                    "[W907 2019+ 신형 Sprinter] 시동 1단(ACC) → 계기판 주행거리 화면에서 좌측 [Back] 버튼 약 3초 누른 뒤 바로 [OK/터치패드] 누름 → [ASSYST PLUS] → [Full Service] → [Confirm]",
+                    "[W906 구형 Sprinter / Metris] 시동 1단 → [통화] + [OK] 동시 5초 유지 (또는 계기판 [M]/[0] 버튼 조합) → [ASSYST PLUS] → [Full Service] 리셋"
+                ]
             }
         ];
 
@@ -2988,6 +3215,8 @@
 
         const brandStyles = {
             ALL:        { btn: 'bg-slate-900 text-white', dot: 'bg-slate-400', badge: 'bg-slate-100 text-slate-800', subLabel: '전체 브랜드 제원 보기' },
+            BMW:        { btn: 'bg-slate-800 text-white', dot: 'bg-slate-700', badge: 'bg-slate-100 text-slate-900 border border-slate-400' },
+            'MERCEDES-BENZ': { btn: 'bg-zinc-800 text-white', dot: 'bg-zinc-700', badge: 'bg-zinc-100 text-zinc-900 border border-zinc-400' },
             BUICK:      { btn: 'bg-emerald-700 text-white', dot: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-900 border border-emerald-400' },
             CHEVROLET:  { btn: 'bg-yellow-600 text-white', dot: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-900 border border-yellow-400' },
             ACURA:      { btn: 'bg-cyan-700 text-white', dot: 'bg-cyan-500', badge: 'bg-cyan-100 text-cyan-900 border border-cyan-300' },
@@ -4468,7 +4697,12 @@
                 'VOLKSWAGEN': 'VOLKSWAGEN',
                 'VW': 'VOLKSWAGEN',
                 'FORD': 'FORD',
-                'BUICK': 'BUICK'
+                'BUICK': 'BUICK',
+                'BMW': 'BMW',
+                'MERCEDES-BENZ': 'MERCEDES-BENZ',
+                'MERCEDES BENZ': 'MERCEDES-BENZ',
+                'MERCEDES': 'MERCEDES-BENZ',
+                'BENZ': 'MERCEDES-BENZ'
             };
             return exactMakeMap[normalized] || 'ALL';
         }
@@ -4621,7 +4855,7 @@
         }
 
 
-        const aftermarketFilterMap = {"90915-YZZF2": "Fram PH4967 / Wix 51394 / Mobil 1 M1-103A", "90915-10003": "Fram PH4967 / Wix 51394", "90915-YZZD1": "Fram PH3614 / Wix 51348 / Mobil 1 M1-102A", "90915-YZZD3": "Fram PH3600 / Wix 51516 / Mobil 1 M1-209A", "90915-YZZN1": "Fram PH4967 / Wix 51394 / Mobil 1 M1-103A", "90915-YZZF1": "Fram PH4386 / Wix 57145 / Mobil 1 M1-103A", "04152-YZZA6": "Fram CH10358 / Wix 57064 / Mobil 1 M1C-156A", "04152-YZZA1": "Fram CH9972 / Wix 57047 / Mobil 1 M1C-251A", "04152-YZZA3": "Fram CH10158 / Wix 57173 / Mobil 1 M1C-253A", "04152-YZZA4": "Fram CH10295 / Wix 57161", "15400-PLM-A02": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15400-RTA-003": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15400-PCX-004": "Fram PH9688 / Wix 51334 (S2000/고유량 사양)", "15400-PT7-005": "Fram PH3593A / Wix 51334", "Mopar MO-090 (P/N 05281090)": "Fram PH16 / Wix 51085 / Mobil 1 M1-204A", "Mopar MO-090": "Fram PH16 / Wix 51085 / Mobil 1 M1-204A", "Fram PH16 · PH8A (Metric/SAE 어댑터 연식 확인)": "Wix 51085 (3/4-16) / Wix 51515 (PH8A 대용량)", "MO-899": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "Mopar MO-899 (P/N 04884899AC)": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "MO-339": "Fram PH10060 / Wix 57060 / Mobil 1 M1-113A", "Mopar MO-349 (P/N 68191349AC)": "Fram CH11665 / Wix WL10010 / Mobil 1 M1C-456A", "Mopar MO-349": "Fram CH11665 / Wix WL10010 / Mobil 1 M1C-456A", "MO-744": "Fram CH10955 / Wix 57526 / Mobil 1 M1C-455A", "Mopar 68229402AA": "Fram CH11794 / Wix WL10072", "B6Y1-14-302A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "PE01-14-302A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "1WPE-14-302": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "LF05-14-302B": "Fram PH3614 / Wix 51348 / Mobil 1 M1-102A", "Motorcraft FL-820S": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "L321-14-302": "Fram CH9641 / Wix 57203", "1WPY-14-302": "Fram PH12479 / Wix WL10388 (2.5T 터보 전용)", "PY8W-14-302": "Fram PH12479 / Wix WL10388 (2.5T 터보 전용)", "Motorcraft FL-400S": "Fram PH3600 / Wix 51516 / Mobil 1 M1-209A", "ZZC4-23-802": "Fram PH3600 / Wix 51516", "PX01-14-302": "Wix WL10676 (3.3L I6 전용)", "26300-35505": "Fram PH9688 / Wix 51334 / Mobil 1 M1-104A", "26300-21A00": "Fram PH3593A / Wix 51334", "26320-3C100": "Fram CH9999 / Wix 57029", "26320-3CAA0": "Fram CH10855 / Wix 57061", "26350-2M000": "Fram CH12895 / Wix WL10514", "26350-2J000": "Fram CH12978 / Wix WL10574", "26350-2S000": "Fram CH12759 / Wix WL10474", "26320-3N000": "Fram CH12977 / Wix WL10573", "26320-3C700": "Fram CH11912 / Wix WL10275", "26320-3C30A": "Fram CH10670 / Wix 57205", "15208-65F0A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "15208-65F0E": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "15208-53J0A": "Fram PH7317 / Wix 57356", "15208-9E000": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15208-55Y0A": "Fram PH3593A / Wix 51334", "ACDelco PF454": "Fram PH30 / Wix 51069 / Mobil 1 M1-202A", "PF47": "Fram PH3387A / Wix 51040 / Mobil 1 M1-101A", "ACDelco PF47": "Fram PH3387A / Wix 51040 / Mobil 1 M1-101A", "PF48": "Fram PH10060 / Wix 57060 / Mobil 1 M1-113A", "ACDelco PF63": "Fram PH10575 / Wix 57045 / Mobil 1 M1-212A", "PF66": "Fram PH12447 / Wix WL10255 / Mobil 1 M1-114A", "ACDelco PF64": "Fram PH12060 / Wix WL10290 / Mobil 1 M1-113A", "PF2262G": "Fram CH12069 / Wix WL10286", "UPF63R": "Fram PH10575 / Wix 57045", "06A115561B": "Mann W719/30 / Wix 51393 / Fram PH8873", "06D115562": "Mann HU719/6x / Wix 57187 / Fram CH10160", "06J115403Q": "Mann W719/45 / Wix 57561 / Mobil 1 M1-303A", "06K115562": "Mann HU6002z / Wix WL10024 / Fram CH11670", "071115562C": "Mann HU719/7x / Wix 57084 / Fram CH9911", "06L115562B": "Mann HU6013z / Wix WL10024 / Fram CH11670", "04E115561 계열": "Mann W712/95 / Wix WL10075 / Fram PH12222", "03H115562": "Mann HU7019z / Wix 57204 / Fram CH10323"};
+        const aftermarketFilterMap = {"90915-YZZF2": "Fram PH4967 / Wix 51394 / Mobil 1 M1-103A", "90915-10003": "Fram PH4967 / Wix 51394", "90915-YZZD1": "Fram PH3614 / Wix 51348 / Mobil 1 M1-102A", "90915-YZZD3": "Fram PH3600 / Wix 51516 / Mobil 1 M1-209A", "90915-YZZN1": "Fram PH4967 / Wix 51394 / Mobil 1 M1-103A", "90915-YZZF1": "Fram PH4386 / Wix 57145 / Mobil 1 M1-103A", "04152-YZZA6": "Fram CH10358 / Wix 57064 / Mobil 1 M1C-156A", "04152-YZZA1": "Fram CH9972 / Wix 57047 / Mobil 1 M1C-251A", "04152-YZZA3": "Fram CH10158 / Wix 57173 / Mobil 1 M1C-253A", "04152-YZZA4": "Fram CH10295 / Wix 57161", "15400-PLM-A02": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15400-RTA-003": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15400-PCX-004": "Fram PH9688 / Wix 51334 (S2000/고유량 사양)", "15400-PT7-005": "Fram PH3593A / Wix 51334", "Mopar MO-090 (P/N 05281090)": "Fram PH16 / Wix 51085 / Mobil 1 M1-204A", "Mopar MO-090": "Fram PH16 / Wix 51085 / Mobil 1 M1-204A", "Fram PH16 · PH8A (Metric/SAE 어댑터 연식 확인)": "Wix 51085 (3/4-16) / Wix 51515 (PH8A 대용량)", "MO-899": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "Mopar MO-899 (P/N 04884899AC)": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "MO-339": "Fram PH10060 / Wix 57060 / Mobil 1 M1-113A", "Mopar MO-349 (P/N 68191349AC)": "Fram CH11665 / Wix WL10010 / Mobil 1 M1C-456A", "Mopar MO-349": "Fram CH11665 / Wix WL10010 / Mobil 1 M1C-456A", "MO-744": "Fram CH10955 / Wix 57526 / Mobil 1 M1C-455A", "Mopar 68229402AA": "Fram CH11794 / Wix WL10072", "B6Y1-14-302A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "PE01-14-302A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "1WPE-14-302": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "LF05-14-302B": "Fram PH3614 / Wix 51348 / Mobil 1 M1-102A", "Motorcraft FL-820S": "Fram PH2 / Wix 51372 / Mobil 1 M1-210A", "L321-14-302": "Fram CH9641 / Wix 57203", "1WPY-14-302": "Fram PH12479 / Wix WL10388 (2.5T 터보 전용)", "PY8W-14-302": "Fram PH12479 / Wix WL10388 (2.5T 터보 전용)", "Motorcraft FL-400S": "Fram PH3600 / Wix 51516 / Mobil 1 M1-209A", "ZZC4-23-802": "Fram PH3600 / Wix 51516", "PX01-14-302": "Wix WL10676 (3.3L I6 전용)", "26300-35505": "Fram PH9688 / Wix 51334 / Mobil 1 M1-104A", "26300-21A00": "Fram PH3593A / Wix 51334", "26320-3C100": "Fram CH9999 / Wix 57029", "26320-3CAA0": "Fram CH10855 / Wix 57061", "26350-2M000": "Fram CH12895 / Wix WL10514", "26350-2J000": "Fram CH12978 / Wix WL10574", "26350-2S000": "Fram CH12759 / Wix WL10474", "26320-3N000": "Fram CH12977 / Wix WL10573", "26320-3C700": "Fram CH11912 / Wix WL10275", "26320-3C30A": "Fram CH10670 / Wix 57205", "15208-65F0A": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "15208-65F0E": "Fram PH6607 / Wix 51365 / Mobil 1 M1-108A", "15208-53J0A": "Fram PH7317 / Wix 57356", "15208-9E000": "Fram PH7317 / Wix 57356 / Mobil 1 M1-110A", "15208-55Y0A": "Fram PH3593A / Wix 51334", "ACDelco PF454": "Fram PH30 / Wix 51069 / Mobil 1 M1-202A", "PF47": "Fram PH3387A / Wix 51040 / Mobil 1 M1-101A", "ACDelco PF47": "Fram PH3387A / Wix 51040 / Mobil 1 M1-101A", "PF48": "Fram PH10060 / Wix 57060 / Mobil 1 M1-113A", "ACDelco PF63": "Fram PH10575 / Wix 57045 / Mobil 1 M1-212A", "PF66": "Fram PH12447 / Wix WL10255 / Mobil 1 M1-114A", "ACDelco PF64": "Fram PH12060 / Wix WL10290 / Mobil 1 M1-113A", "PF2262G": "Fram CH12069 / Wix WL10286", "UPF63R": "Fram PH10575 / Wix 57045", "06A115561B": "Mann W719/30 / Wix 51393 / Fram PH8873", "06D115562": "Mann HU719/6x / Wix 57187 / Fram CH10160", "06J115403Q": "Mann W719/45 / Wix 57561 / Mobil 1 M1-303A", "06K115562": "Mann HU6002z / Wix WL10024 / Fram CH11670", "071115562C": "Mann HU719/7x / Wix 57084 / Fram CH9911", "06L115562B": "Mann HU6013z / Wix WL10024 / Fram CH11670", "04E115561 계열": "Mann W712/95 / Wix WL10075 / Fram PH12222", "03H115562": "Mann HU7019z / Wix 57204 / Fram CH10323", "A2701800109": "Mann HU711/6z / Wix WL10073 / Mahle OX982D", "A2761800009": "Mann HU7025z / Wix WL10044 / Mahle OX814D", "A0001802609": "Mann HU718/5x / Wix 57078 / Mahle OX153/7D", "A2561840000": "Mann HU6020z / Mahle OX1274D", "A2541840600": "Mann HU6036z / Mahle OX1358D", "A6421800009": "Mann HU821x / Wix 57054 / Mahle OX380D", "A6511800109": "Mann HU7010z / Wix WL10023 / Mahle OX153/7D2", "A6541801100": "Mann HU6015z / Mahle OX1140D"};
 
         // 엔진 공유 정보: 배기량과 엔진 세부사양(엔진코드·엔진명)이 모두 같은 경우만 표시.
         // 각 줄은 need(소문자 토큰)가 이 카드의 엔진 행에 모두 포함될 때만 보입니다.
@@ -4950,6 +5184,84 @@
                 stopBarcodeScanner();
             }
         });
+
+
+        // ==========================================
+        // [모바일 스마트 헤더] 아래로 스크롤 시 #searchHeader 숨김, 위로 스크롤/최상단 시 즉시 복귀
+        // ==========================================
+        (function initMobileSmartHeader() {
+            const headerEl = document.getElementById('searchHeader');
+            const searchInputEl = document.getElementById('searchInput');
+            const suggestBoxEl = document.getElementById('suggestBox');
+            if (!headerEl) return;
+
+            let lastScrollY = window.scrollY || 0;
+            let ticking = false;
+            const MOBILE_MAX_WIDTH = 1023; // lg 브레이크포인트 미만 모바일/태블릿 환경
+            const SCROLL_DELTA_THRESHOLD = 8;
+
+            function showHeader() {
+                headerEl.style.transform = 'translateY(0)';
+            }
+
+            function hideHeader() {
+                headerEl.style.transform = 'translateY(-100%)';
+            }
+
+            function updateHeaderOnScroll() {
+                ticking = false;
+                const currentScrollY = Math.max(0, window.scrollY || window.pageYOffset || 0);
+
+                // 데스크톱 화면, 스캐너 전체화면, 입력창 포커스/자동완성 열림 상태에서는 항상 표시 유지
+                const isMobile = window.innerWidth <= MOBILE_MAX_WIDTH;
+                const isInputFocused = document.activeElement === searchInputEl;
+                const isSuggestOpen = suggestBoxEl && !suggestBoxEl.classList.contains('hidden');
+
+                if (!isMobile || scannerImmersive || isInputFocused || isSuggestOpen) {
+                    showHeader();
+                    lastScrollY = currentScrollY;
+                    return;
+                }
+
+                // 최상단 근처에서는 즉시 표시
+                if (currentScrollY <= 16) {
+                    showHeader();
+                    lastScrollY = currentScrollY;
+                    return;
+                }
+
+                const diff = currentScrollY - lastScrollY;
+
+                if (diff > SCROLL_DELTA_THRESHOLD) {
+                    // 아래로 스크롤 -> 헤더 높이 이상 내려갔을 때 부드럽게 위로 숨김
+                    if (currentScrollY > headerEl.offsetHeight) {
+                        hideHeader();
+                    }
+                    lastScrollY = currentScrollY;
+                } else if (diff < -SCROLL_DELTA_THRESHOLD) {
+                    // 위로 스크롤 -> 즉시 내려오도록 표시
+                    showHeader();
+                    lastScrollY = currentScrollY;
+                }
+            }
+
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(updateHeaderOnScroll);
+                    ticking = true;
+                }
+            }, { passive: true });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > MOBILE_MAX_WIDTH) {
+                    showHeader();
+                }
+            }, { passive: true });
+
+            if (searchInputEl) {
+                searchInputEl.addEventListener('focus', showHeader);
+            }
+        })();
 
         // 초기 실행
         renderBrandSidebar();
