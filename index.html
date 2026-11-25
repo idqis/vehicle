@@ -2248,6 +2248,279 @@
             },
 
             // =====================================================================
+            // 10-1. INFINITI (Nissan 프리미엄 브랜드, 1990 ~ Present)
+            // =====================================================================
+            {
+                brand: "INFINITI",
+                model: "[초기 세대] G20 (P10 / P11) / I30 (A32 / A33) / I35 (A33) / J30 (J30) (1991~2004)",
+                engineUse: [["G20"], ["I30"], ["I35"], ["J30"]],
+                keywords: ["infiniti", "g20", "p10", "p11", "i30", "a32", "a33", "i35", "j30", "sr20de", "vq30de", "vq35de", "vg30de", "2.0", "3.0", "3.5"],
+                displacement: [2.0, 3.0, 3.5],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [1991, 2004],
+                year: "1991 ~ 2004",
+                engine: "2.0L SR20DE (G20) · 3.0L VQ30DE (I30) · 3.5L VQ35DE V6 (I35) · 3.0L VG30DE V6 (J30)",
+                oilSpec: "API SJ / SL / SM | 5W-30 (전 차종 표준)",
+                capacity: "3.7 ~ 4.7 L [2.0L SR20DE: 3.7 L / 3.0L VQ30DE/VG30DE: 4.0 ~ 4.4 L / 3.5L VQ35DE V6: 4.7 L]",
+                filterPartNo: "15208-65F0E (G20 1999~2002 · I35) / 15208-53J0A (구형 G20 · I30 · J30 — VIN 확인 필수)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "195/60R15 · 205/50R16 · 205/65R15 · 215/55R16 · 215/55R17 (트림별 상이)",
+                tirePressure: "30 ~ 33 PSI (205 ~ 230 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "80 ~ 94 lb-ft (108 ~ 127 Nm)",
+                tpmsReset: "TPMS 미적용 세대 (2004년식 이하).",
+                sharedWith: [
+                    { engine: "2.0L SR20DE", need: ["sr20de"], with: "Nissan Sentra SE-R" },
+                    { engine: "3.0L VQ30DE", need: ["vq30de"], with: "Nissan Maxima" },
+                    { engine: "3.5L VQ35DE V6", need: ["vq35de"], with: "Nissan Maxima · Altima" }
+                ],
+                resetSteps: [
+                    "1991~2004 초기형 Infiniti는 계기판 자동 오일 알림 미적용 (정비 스티커 수동 관리)"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[1~2세대] Q45 (G50 / F50) (1990~2006)",
+                keywords: ["infiniti", "q45", "g50", "f50", "vh45de", "vh41de", "vk45de", "4.1", "4.5"],
+                displacement: [4.1, 4.5],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [1990, 2006],
+                year: "1990 ~ 2006",
+                engine: "4.5L VH45DE V8 (G50 1990~1996) · 4.1L VH41DE V8 (1997~2001) · 4.5L VK45DE V8 (F50 2002~2006)",
+                oilSpec: "API SJ / SL / SM | 5W-30 (전 연식 표준)",
+                capacity: "5.3 ~ 6.0 L [4.5L VH45DE: 약 6.0 L / 4.1L VH41DE: 약 5.3 L / 4.5L VK45DE: 약 5.6 L]",
+                filterPartNo: "15208-9E000 / 15208-65F0A (Spin-on - VIN · 생산월 확인 필수)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "225/60R16 · 225/55R17 · 245/45R18 (연식·트림별 상이)",
+                tirePressure: "32 ~ 35 PSI (220 ~ 240 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "80 ~ 94 lb-ft (108 ~ 127 Nm)",
+                tpmsReset: "TPMS 미적용 세대 (VIN · 옵션 확인).",
+                resetSteps: [
+                    "1990~2006 Q45는 계기판 자동 오일 알림 미적용 (정비 스티커 수동 관리)"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[V35 · V36] G35 / G37 / Q40 (2003~2015)",
+                engineUse: [["G35"], ["G35"], ["G37", "Q40"]],
+                keywords: ["infiniti", "g35", "g37", "q40", "v35", "v36", "cv36", "vq35de", "vq35hr", "vq37vhr", "3.5", "3.7"],
+                displacement: [3.5, 3.7],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [2003, 2015],
+                year: "2003 ~ 2015",
+                engine: "3.5L VQ35DE (2003~2006) · 3.5L VQ35HR (2007~2008) · 3.7L VQ37VHR (2008~2015)",
+                oilSpec: "API SM / SN | 5W-30 (전 연식 표준)",
+                capacity: "4.7 ~ 4.9 L [3.5L VQ35DE: 4.7 L / 3.5L VQ35HR: 4.7 ~ 4.9 L / 3.7L VQ37VHR: 4.9 L]",
+                filterPartNo: "15208-65F0E (Spin-on)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "225/55R17 · 225/50R17 · 225/45R18 · 245/40R18 · 225/45R19 · 245/40R19 (트림별 상이)",
+                tirePressure: "32 ~ 35 PSI (220 ~ 240 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "83 lb-ft (113 Nm)",
+                tpmsReset: "[2008+ 적용] Direct TPMS: 냉간 규정 공기압 주입 후 10~15분 주행 시 자동 소등. (2007 이하는 미적용 또는 옵션)",
+                sharedWith: [
+                    { engine: "3.5L VQ35DE", need: ["vq35de"], with: "Nissan 350Z · Altima · Maxima" },
+                    { engine: "3.5L VQ35HR", need: ["vq35hr"], with: "Nissan 350Z" },
+                    { engine: "3.7L VQ37VHR", need: ["vq37vhr"], with: "Nissan 370Z" }
+                ],
+                resetSteps: [
+                    "[2008~2015 G37 · Q40] 계기판 [Settings] → [Maintenance] → [Engine Oil] → [Reset] (사양별 메뉴 명칭 상이)",
+                    "[2003~2007 G35] 오일 교환 알림 미적용 (정비 스티커 수동 관리)"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[V37 · CV36 · CV37] Q50 / Q60 (2014~현재)",
+                engineUse: [["Q50", "Q60"], ["Q50"], ["Q50", "Q60"], ["Q50", "Q60"]],
+                keywords: ["infiniti", "q50", "q60", "v37", "cv36", "cv37", "vq37vhr", "vq35hr", "m274", "vr30ddtt", "red sport", "3.7", "3.5", "2.0", "3.0"],
+                displacement: [3.7, 3.5, 2.0, 3.0],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [2014, 2026],
+                year: "2014 ~ 현재",
+                engine: "3.7L VQ37VHR (2014~2016) · 3.5L VQ35HR Hybrid (2014~2019) · 2.0L M274 Turbo (2016~2018) · 3.0L VR30DDTT V6 Twin-Turbo (2016+)",
+                oilSpec: "API SN / SP | 5W-30 (3.7L · 하이브리드 · 2.0T) / 0W-20 (3.0T VR30DDTT) | 3.0T는 2020년 이후 오일량이 +0.5 qt 증가(짧은 딥스틱 교체 TSB) - 딥스틱 확인 필수",
+                capacity: "4.8 ~ 6.3 L [3.7L VQ37VHR: 4.9 L / 3.5L VQ35HR Hybrid: 4.9 L / 2.0L M274 Turbo: 약 6.3 L / 3.0L VR30DDTT V6 Twin-Turbo: 약 4.8 ~ 5.4 L]",
+                filterPartNo: "15208-65F0E (VQ37VHR · VQ35HR) / 15208-65F1E (VR30DDTT 3.0T) / 카트리지식 (M274 2.0T - VIN 확인 필수)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "225/55R17 · 225/50R18 · 245/40R19 · 245/35R20 (트림별 상이)",
+                tirePressure: "32 ~ 36 PSI (220 ~ 250 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "83 lb-ft (113 Nm)",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 10~15분 주행 시 자동 소등.",
+                sharedWith: [
+                    { engine: "3.7L VQ37VHR", need: ["vq37vhr"], with: "Nissan 370Z" },
+                    { engine: "3.0L VR30DDTT", need: ["vr30ddtt"], with: "Nissan Z (2023+)" }
+                ],
+                resetSteps: [
+                    "Ignition ON → 클러스터 또는 InTouch [Settings] → [Maintenance] → [Engine Oil] → [Reset] (사양별 메뉴 명칭 상이)"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[Y50 · Y51] M35 / M45 / M37 / M56 / Q70 (2006~2019)",
+                engineUse: [["M35", "Q70"], ["M45"], ["M37", "Q70"], ["M56", "Q70"]],
+                keywords: ["infiniti", "m35", "m45", "m37", "m56", "q70", "y50", "y51", "vq35de", "vq35hr", "vq37vhr", "vk45de", "vk56vd", "3.5", "3.7", "4.5", "5.6"],
+                displacement: [3.5, 4.5, 3.7, 5.6],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [2006, 2019],
+                year: "2006 ~ 2019",
+                engine: "3.5L VQ35DE / VQ35HR (M35 · Q70) · 4.5L VK45DE V8 (M45) · 3.7L VQ37VHR (M37 · Q70) · 5.6L VK56VD V8 (M56 · Q70)",
+                oilSpec: "API SM / SN / SP | 5W-30 (전 차종 표준)",
+                capacity: "4.7 ~ 6.5 L [3.5L VQ35DE/VQ35HR: 4.7 ~ 4.9 L / 3.7L VQ37VHR: 4.9 L / 4.5L VK45DE V8: 5.6 ~ 5.8 L / 5.6L VK56VD V8: 6.5 L]",
+                filterPartNo: "15208-65F0E (VQ35 · VQ37) / 15208-9E000 (VK45DE · VK56VD)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "225/55R17 · 245/50R18 · 245/45R19 · 245/40R20 (트림별 상이)",
+                tirePressure: "33 ~ 36 PSI (230 ~ 250 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "83 lb-ft (113 Nm)",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 10~15분 주행 시 자동 소등. (2007 이하는 미적용 또는 옵션)",
+                sharedWith: [
+                    { engine: "3.5L VQ35DE", need: ["vq35de"], with: "Nissan Altima · Maxima · Murano" },
+                    { engine: "3.7L VQ37VHR", need: ["vq37vhr"], with: "Nissan 370Z" },
+                    { engine: "5.6L VK56VD V8", need: ["vk56vd"], with: "Nissan Armada · Titan" }
+                ],
+                resetSteps: [
+                    "Ignition ON → 클러스터 [Settings] → [Maintenance] → [Engine Oil] → [Reset] (사양별 메뉴 명칭 상이)",
+                    "[2010 이하 M35 · M45] 오일 교환 알림 미적용 (수동 관리)"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[S50 · S51] FX35 / FX45 / FX37 / FX50 / QX70 (2003~2017)",
+                engineUse: [["FX35"], ["FX35"], ["FX45"], ["FX37", "QX70"], ["FX50", "QX70"]],
+                keywords: ["infiniti", "fx35", "fx45", "fx37", "fx50", "qx70", "s50", "s51", "vq35de", "vq35hr", "vk45de", "vq37vhr", "vk50ve", "3.5", "3.7", "4.5", "5.0"],
+                displacement: [3.5, 4.5, 3.7, 5.0],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [2003, 2017],
+                year: "2003 ~ 2017",
+                engine: "3.5L VQ35DE (2003~2008) · 3.5L VQ35HR (2009~2012) · 4.5L VK45DE V8 (2003~2008) · 3.7L VQ37VHR (2013~2017) · 5.0L VK50VE V8 (2009~2017)",
+                oilSpec: "API SM / SN / SP | 5W-30 (전 차종 표준)",
+                capacity: "4.7 ~ 6.7 L [3.5L VQ35DE: 4.7 L / 3.5L VQ35HR: 4.9 L / 4.5L VK45DE V8: 5.6 ~ 6.4 L / 3.7L VQ37VHR: 4.9 L / 5.0L VK50VE V8: 6.7 L]",
+                filterPartNo: "15208-65F0E (VQ35 · VQ37) / 15208-9E000 (VK45DE · VK50VE)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "235/65R18 · 265/60R18 · 265/50R20 · 265/45R21 (트림별 상이)",
+                tirePressure: "33 ~ 36 PSI (230 ~ 250 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "83 lb-ft (113 Nm)",
+                tpmsReset: "[2008+ 표준] Direct TPMS: 냉간 규정 공기압 주입 후 10~15분 주행 시 자동 소등. (2007 이하 S50은 미적용 또는 옵션)",
+                sharedWith: [
+                    { engine: "3.5L VQ35DE", need: ["vq35de"], with: "Nissan 350Z · Murano" },
+                    { engine: "3.7L VQ37VHR", need: ["vq37vhr"], with: "Nissan 370Z" }
+                ],
+                resetSteps: [
+                    "[2009~2017 S51] Ignition ON → 클러스터 [Settings] → [Maintenance] → [Engine Oil] → [Reset] (사양별 메뉴 명칭 상이)",
+                    "[2003~2008 S50] 오일 교환 알림 미적용 (수동 관리)"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[J50] EX35 / EX37 / QX50 (2008~2017)",
+                engineUse: [["EX35"], ["EX37", "QX50"]],
+                keywords: ["infiniti", "ex35", "ex37", "qx50", "j50", "vq35hr", "vq37vhr", "3.5", "3.7"],
+                displacement: [3.5, 3.7],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [2008, 2017],
+                year: "2008 ~ 2017",
+                engine: "3.5L VQ35HR (EX35 2008~2012) · 3.7L VQ37VHR (EX37 2013 · QX50 2014~2017)",
+                oilSpec: "API SN / SP | 5W-30 (전 연식 표준)",
+                capacity: "4.9 L [3.5L VQ35HR: 4.9 L / 3.7L VQ37VHR: 4.9 L]",
+                filterPartNo: "15208-65F0E (Spin-on)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "225/60R17 · 235/55R18 · 245/45R19 (트림별 상이)",
+                tirePressure: "33 ~ 36 PSI (230 ~ 250 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "83 lb-ft (113 Nm)",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 10~15분 주행 시 자동 소등.",
+                sharedWith: [
+                    { engine: "3.5L VQ35HR", need: ["vq35hr"], with: "Nissan 350Z" },
+                    { engine: "3.7L VQ37VHR", need: ["vq37vhr"], with: "Nissan 370Z" }
+                ],
+                resetSteps: [
+                    "Ignition ON → 클러스터 [Settings] → [Maintenance] → [Engine Oil] → [Reset] (사양별 메뉴 명칭 상이)"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[J55 · FJ55] QX50 / QX55 (2019~현재)",
+                keywords: ["infiniti", "qx50", "qx55", "j55", "fj55", "kr20ddet", "vc-turbo", "vc turbo", "2.0"],
+                displacement: [2.0],
+                isTurbo: true,
+                isHybrid: false,
+                yearRange: [2019, 2026],
+                year: "2019 ~ 현재",
+                engine: "2.0L KR20DDET VC-Turbo (Variable Compression)",
+                oilSpec: "API SP / ILSAC GF-6 | 5W-30 또는 0W-20 (연식별 상이 - 오너 매뉴얼 확인 필수)",
+                capacity: "4.7 L",
+                filterPartNo: "15208-65F0E (구 15208-65F0A · Spin-on)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "235/55R19 · 255/45R20 · 255/40R21 (트림별 상이)",
+                tirePressure: "33 ~ 36 PSI (230 ~ 250 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "83 lb-ft (113 Nm)",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 10~15분 주행 시 자동 소등.",
+                sharedWith: [
+                    { engine: "2.0L KR20DDET VC-Turbo", need: ["kr20ddet"], with: "Nissan Altima (2.0 VC-Turbo)" }
+                ],
+                resetSteps: [
+                    "Ignition ON → 클러스터 [Settings] → [Maintenance] → [Engine Oil] → [Reset]"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[JA60 · Z62 · Z63] QX56 / QX80 (2004~현재)",
+                engineUse: [["QX56"], ["QX56", "QX80"], ["QX80"]],
+                keywords: ["infiniti", "qx56", "qx80", "ja60", "z62", "z63", "vk56de", "vk56vd", "vr35ddtt", "5.6", "3.5"],
+                displacement: [5.6, 3.5],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [2004, 2026],
+                year: "2004 ~ 현재",
+                engine: "5.6L VK56DE V8 (2004~2010) · 5.6L VK56VD V8 (2011~2024) · 3.5L VR35DDTT V6 Twin-Turbo (2025+)",
+                oilSpec: "API SN / SP | 5W-30 (VK56DE · VK56VD 2015 이전) / 0W-20 (VK56VD 2016+ · VR35DDTT)",
+                capacity: "5.7 ~ 7.3 L [5.6L VK56DE V8: 6.5 ~ 7.3 L / 5.6L VK56VD V8: 6.5 L / 3.5L VR35DDTT V6 Twin-Turbo: 약 5.7 ~ 6.0 L]",
+                filterPartNo: "15208-9E000 (VK56DE · VK56VD) / 15208-65F0E 계열 (VR35DDTT - VIN 확인 필수)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "265/70R18 · 275/60R20 · 275/50R22 (트림별 상이)",
+                tirePressure: "35 ~ 40 PSI (240 ~ 275 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "98 lb-ft (133 Nm)",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 10~15분 주행 시 자동 소등.",
+                sharedWith: [
+                    { engine: "5.6L VK56DE V8", need: ["vk56de"], with: "Nissan Armada · Titan" },
+                    { engine: "5.6L VK56VD V8", need: ["vk56vd"], with: "Nissan Armada · Titan (2016+)" }
+                ],
+                resetSteps: [
+                    "Ignition ON → 클러스터 [Settings] → [Maintenance] → [Engine Oil] → [Reset] (사양별 메뉴 명칭 상이)",
+                    "[구형 QX56] 계기판 오일 알림 유무는 연식·사양별 상이 - 수동 관리 권장"
+                ]
+            },
+            {
+                brand: "INFINITI",
+                model: "[L50 · L51] JX35 / QX60 (2013~현재)",
+                keywords: ["infiniti", "jx35", "qx60", "l50", "l51", "vq35de", "vq35dd", "3.5"],
+                displacement: [3.5],
+                isTurbo: false,
+                isHybrid: false,
+                yearRange: [2013, 2026],
+                year: "2013 ~ 현재",
+                engine: "3.5L VQ35DE (2013~2014) · 3.5L VQ35DD (2014+)",
+                oilSpec: "API SN / SP | 0W-20 (전 연식 표준)",
+                capacity: "4.7 ~ 4.8 L [3.5L VQ35DE: 4.8 L / 3.5L VQ35DD: 4.7 ~ 4.8 L]",
+                filterPartNo: "15208-65F0E (Spin-on)",
+                drainPlugTorque: "21 ~ 29 lb-ft (29 ~ 39 Nm)",
+                tireSize: "235/65R18 · 235/55R20 · 255/50R20 (트림별 상이)",
+                tirePressure: "33 ~ 36 PSI (230 ~ 250 kPa - 도어 스티커 확인 필수)",
+                wheelTorque: "83 lb-ft (113 Nm)",
+                tpmsReset: "Direct TPMS: 냉간 규정 공기압 주입 후 10~15분 주행 시 자동 소등.",
+                sharedWith: [
+                    { engine: "3.5L VQ35DE", need: ["vq35de"], with: "Nissan Pathfinder · Murano · Maxima" },
+                    { engine: "3.5L VQ35DD", need: ["vq35dd"], with: "Nissan Pathfinder · Murano · Maxima" }
+                ],
+                resetSteps: [
+                    "Ignition ON → 클러스터 [Settings] → [Maintenance] → [Oil and Filter] → [Reset]"
+                ]
+            },
+
+            // =====================================================================
             // 11. CHEVROLET (1981 ~ Present)
             // =====================================================================
             {
@@ -3223,6 +3496,7 @@
             KIA:        { btn: 'bg-red-600 text-white', dot: 'bg-red-500', badge: 'bg-red-100 text-red-800' },
             LEXUS:      { btn: 'bg-purple-700 text-white', dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-900 border border-purple-300' },
             MAZDA:      { btn: 'bg-indigo-600 text-white', dot: 'bg-indigo-500', badge: 'bg-indigo-100 text-indigo-900 border border-indigo-300' },
+            INFINITI:   { btn: 'bg-fuchsia-700 text-white', dot: 'bg-fuchsia-500', badge: 'bg-fuchsia-100 text-fuchsia-900 border border-fuchsia-300' },
             NISSAN:     { btn: 'bg-rose-600 text-white', dot: 'bg-rose-500', badge: 'bg-rose-100 text-rose-900 border border-rose-300' },
             STELLANTIS: { btn: 'bg-orange-600 text-white', dot: 'bg-orange-500', badge: 'bg-orange-100 text-orange-900 border border-orange-300', subLabel: 'Jeep / Ram / Dodge / Chrysler' },
             TOYOTA:     { btn: 'bg-teal-600 text-white', dot: 'bg-teal-500', badge: 'bg-teal-100 text-teal-900 border border-teal-300' },
@@ -4676,6 +4950,7 @@
                 'GENESIS': 'GENESIS',
                 'NISSAN': 'NISSAN',
                 'DATSUN': 'NISSAN',
+                'INFINITI': 'INFINITI',
                 'MAZDA': 'MAZDA',
                 'TOYOTA': 'TOYOTA',
                 'LEXUS': 'LEXUS',
