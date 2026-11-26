@@ -199,6 +199,12 @@
                 </div>
             </div>
 
+            <!-- DTC (OBD-II 고장코드) 진단 결과 영역 -->
+            <section id="dtcResultSection" class="hidden mb-6 space-y-3">
+                <div id="dtcCommonSummary" class="hidden bg-amber-950 text-amber-50 rounded-xl p-4 border-l-4 border-amber-400 shadow-sm"></div>
+                <div id="dtcCardContainer" class="grid grid-cols-1 xl:grid-cols-2 gap-4"></div>
+            </section>
+
             <!-- 상태 표시줄 -->
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 mb-4">
                 <span id="resultCount" class="text-sm font-medium text-slate-600">총 0건의 북미 차량 데이터</span>
@@ -5654,6 +5660,441 @@ ${vinSourceNote}
             if (searchInputEl) {
                 searchInputEl.addEventListener('focus', showHeader);
             }
+        })();
+
+        // ==========================================
+        // [DTC (P/B/C/U-Code) 진단 모듈 - 2단계 하이브리드]
+        // ==========================================
+        const dtcCoreData = {
+            P0101: {
+                code: 'P0101',
+                system: '연료 및 공기 계량 (MAF 센서)',
+                titleKo: '질량 공기유량(MAF) 센서 회로 범위/성능 이상',
+                titleEn: 'Mass or Volume Air Flow "A" Circuit Range/Performance',
+                trigger: 'ECU가 스로틀 개도·RPM·MAP 대비 계산한 이론 공기량과 MAF 센서 측정값의 편차가 기준치 초과 시 발생',
+                causes: [
+                    'MAF 센서 열선 오염(애프터마켓 습식 에어필터 오일, 먼지 유입)',
+                    '에어필터 하우징 ~ 스로틀 바디 사이 흡기 덕트 찢어짐/클램프 풀림(미계측 공기 유입)',
+                    '에어필터 막힘 또는 MAF 센서 커넥터 접촉 불량·센서 단품 불량'
+                ],
+                checkpoints: [
+                    '공회전(웜업 완료, 무부하) 시 MAF 유량(g/s)이 배기량(L)과 유사한 수준인지 확인 (예: 2.0L ≈ 2.0~2.5 g/s)',
+                    '흡기 부트 주름관 균열 육안 점검 및 스모크 테스트로 누설 확인',
+                    '전용 MAF 클리너로 센서 세척 후 학습값(KAM/Fuel Trim) 초기화'
+                ],
+                tags: ['air_leak', 'maf', 'fuel_trim']
+            },
+            P0171: {
+                code: 'P0171',
+                system: '연료 및 공기 계량 (연료 트림)',
+                titleKo: '시스템 희박 (뱅크 1)',
+                titleEn: 'System Too Lean (Bank 1)',
+                trigger: '단기(STFT) + 장기(LTFT) 연료 트림 보정 합계가 +20~25% 이상으로 장시간 유지될 때 발생',
+                causes: [
+                    '흡기 매니폴드 가스켓, 진공 호스, PCV 밸브/호스, 브레이크 부스터 라인 진공 누설',
+                    'MAF 센서 오염 또는 연료펌프 압력 저하·연료필터 막힘',
+                    '배기 매니폴드 균열(상류 산소센서 전단 외기 유입) 또는 상류 O2/A/F 센서 응답 지연'
+                ],
+                checkpoints: [
+                    '공회전 vs 2,500 RPM 고정 시 STFT/LTFT 변화 비교 (공회전에서만 높으면 진공 누설 유력, 고RPM에서 더 악화되면 연료압/MAF 의심)',
+                    '흡기계 스모크 머신 테스트 및 PCV 계통 부압 확인',
+                    '연료 레일 실측 연료압력(Key-On 및 부하 시) 점검'
+                ],
+                tags: ['air_leak', 'maf', 'fuel_pressure', 'fuel_trim']
+            },
+            P0174: {
+                code: 'P0174',
+                system: '연료 및 공기 계량 (연료 트림)',
+                titleKo: '시스템 희박 (뱅크 2)',
+                titleEn: 'System Too Lean (Bank 2)',
+                trigger: 'V6/V8/수평대향 엔진의 뱅크 2 측 연료 트림 보정 합계가 +20~25% 이상 지속 시 발생',
+                causes: [
+                    '공통 흡기 계통 진공 누설(흡기 덕트, 공용 진공 라인, PCV 밸브)',
+                    'MAF 센서 오염 또는 연료펌프 전체 토출압 저하 (P0171 동반 시 최우선 의심)',
+                    '뱅크 2 전용 흡기 매니폴드 가스켓 누설 또는 뱅크 2 상류 A/F 센서 불량'
+                ],
+                checkpoints: [
+                    'P0171과 동시 점등 여부 확인 (동시 발생 시 뱅크 공통 부품인 MAF·연료압·공통 진공호스 우선 점검)',
+                    '뱅크 1과 뱅크 2의 STFT/LTFT 및 상류 산소센서(B1S1 vs B2S1) 파형 비교',
+                    '뱅크 2 측 흡기 플레넘·인젝터 O링 부위 스모크 테스트'
+                ],
+                tags: ['air_leak', 'maf', 'fuel_pressure', 'fuel_trim']
+            },
+            P0300: {
+                code: 'P0300',
+                system: '점화 시스템 / 실화 감지',
+                titleKo: '다기통 / 무작위 실화 감지',
+                titleEn: 'Random / Multiple Cylinder Misfire Detected',
+                trigger: '크랭크샤프트 포지션(CKP) 센서 각속도 변동이 특정 기통에 국한되지 않고 여러 기통에서 임계치 초과 시 발생',
+                causes: [
+                    '점화플러그 전체 노화/간극 과다 또는 점화코일 전원/접지 공통 회로 불량',
+                    '연료압력 부족(연료펌프 약화, 연료압 레귤레이터 불량) 또는 대규모 진공 누설',
+                    'EGR 밸브 열림 고착, 가변밸브타이밍(VVT) 오일 컨트롤 밸브 고착, 타이밍 체인 늘어남'
+                ],
+                checkpoints: [
+                    '스캔툴 Mode $06 기통별 실화 카운터(Current / History)로 주력 실화 기통 특정',
+                    '연료트림(STFT/LTFT) 및 연료 레일 압력 확인',
+                    '타이밍 관련 코드(P0011~P0019) 동반 시 엔진오일 레벨·점도 및 VVT 솔레노이드 점검'
+                ],
+                tags: ['misfire', 'ignition', 'fuel_pressure', 'air_leak']
+            },
+            P0301: {
+                code: 'P0301',
+                system: '점화 시스템 / 실화 감지',
+                titleKo: '1번 기통 실화 감지 (P0301~P0308 동일 로직)',
+                titleEn: 'Cylinder 1 Misfire Detected',
+                trigger: '1번 기통 연소 행정 직후 크랭크샤프트 회전 가속도가 기준치에 미달할 때 발생',
+                causes: [
+                    '1번 기통 점화코일(COP) 절연 파괴 또는 점화플러그 마모/오염(오일 누유 침수 포함)',
+                    '1번 인젝터 단선/막힘 또는 배선 커넥터 접촉 불량',
+                    '1번 기통 압축압력 저하(밸브 씰/시트 불량, 헤드 가스켓, 피스톤 링)'
+                ],
+                checkpoints: [
+                    '1번 점화코일 ↔ 2번 점화코일 맞교환 후 실화 코드가 P0302로 이동하는지 확인 (가장 빠른 코일 판별법)',
+                    '점화플러그 탈거 후 전극 상태 및 플러그 홀 엔진오일 유입 여부 확인',
+                    '인젝터 작동음/저항(약 11~16Ω) 및 실린더 압축압력 측정'
+                ],
+                tags: ['misfire', 'ignition', 'injector']
+            },
+            P0420: {
+                code: 'P0420',
+                system: '배출가스 제어 (삼원촉매)',
+                titleKo: '촉매 시스템 효율 기준치 미만 (뱅크 1)',
+                titleEn: 'Catalyst System Efficiency Below Threshold (Bank 1)',
+                trigger: '정속 주행 워밍업 상태에서 하류 산소센서(B1S2) 진폭이 상류 센서(B1S1)와 유사하게 요동칠 때 발생',
+                causes: [
+                    '뱅크 1 삼원촉매(TWC) 내부 담체 열화/용융(실화 방치, 오일/냉각수 연소 유입 이력)',
+                    '촉매 전후방 배기 파이프/플랜지 누설로 외기 유입',
+                    '하류 산소센서(B1S2) 노화 또는 상류 A/F 센서 응답 왜곡'
+                ],
+                checkpoints: [
+                    '실화(P030x)나 연료트림(P0171/P0172) 선행 고장코드가 있다면 촉매 교환 전 반드시 먼저 수리',
+                    '충분히 예열 후 2,000 RPM 유지 시 B1S2 전압이 0.6~0.8V 부근에서 안정적으로 유지되는지 라이브 데이터 확인',
+                    '촉매 입구 vs 출구 표면 온도 비교(정상 작동 시 출구 온도가 입구보다 약 30~50°C 이상 높음)'
+                ],
+                tags: ['catalyst', 'o2_sensor', 'exhaust_leak']
+            },
+            P0442: {
+                code: 'P0442',
+                system: '증발가스 제어 (EVAP)',
+                titleKo: '증발가스(EVAP) 시스템 미세 누설 감지 (0.040" 이하)',
+                titleEn: 'Evaporative Emission System Leak Detected (Small Leak)',
+                trigger: '시동 직후 또는 주차 후 연료탱크 진공/가압 리크 테스트 중 압력 유지 실패 시 발생',
+                causes: [
+                    '주유구 캡(Gas Cap) 고무 실링 경화/균열 또는 덜 잠김',
+                    'EVAP 퍼지 솔레노이드 밸브 미세 누설 또는 벤트 밸브 고착',
+                    '차콜 캐니스터 크랙 또는 탱크 상단 EVAP 호스/커넥터 미세 균열'
+                ],
+                checkpoints: [
+                    '주유구 캡 가스켓 상태 점검 및 정품 캡 체결 후 코드 소거 테스트',
+                    '퍼지 솔레노이드 탈거 후 전원 미인가 상태에서 기밀 유지 여부 확인',
+                    'EVAP 스모크 머신으로 연료탱크~엔진룸 라인 누설 부위 추적'
+                ],
+                tags: ['evap']
+            },
+            P0455: {
+                code: 'P0455',
+                system: '증발가스 제어 (EVAP)',
+                titleKo: '증발가스(EVAP) 시스템 대량 누설 감지',
+                titleEn: 'Evaporative Emission System Leak Detected (Large Leak)',
+                trigger: 'EVAP 리크 모니터 작동 시 연료탱크 내부 진공/압력이 전혀 형성되지 않을 때 발생',
+                causes: [
+                    '주유구 캡 미체결·분실 또는 캡리스(Capless) 주유구 플랩 이물질 고착',
+                    'EVAP 퍼지 호스/벤트 호스 탈거 또는 파손',
+                    '퍼지 밸브/벤트 밸브 완전 열림 고착 또는 연료탱크 압력(FTP) 센서 불량'
+                ],
+                checkpoints: [
+                    '주유구 캡 체결 상태 및 캡리스 타입(Ford/GM/Honda 등) 씰 청소·윤활 확인',
+                    '스캔툴 양방향 제어로 벤트 밸브 닫힘(Close) 명령 후 연료탱크 압력 센서(FTP) 변화 관찰',
+                    '엔진룸 퍼지 밸브 ~ 연료탱크 하부 호스 탈거 부위 육안 점검'
+                ],
+                tags: ['evap']
+            },
+            P0128: {
+                code: 'P0128',
+                system: '냉각 / 연료 제어',
+                titleKo: '냉각수 온도(ECT)가 서모스탯 조절 온도 미만',
+                titleEn: 'Coolant Thermostat (Coolant Temperature Below Thermostat Regulating Temperature)',
+                trigger: '주행 시간 및 흡입 공기량 누적치 대비 냉각수 온도가 목표 온도(보통 80~85°C)에 도달하지 못할 때 발생',
+                causes: [
+                    '서모스탯 열림 고착(Stuck Open)으로 냉각수가 라디에이터로 상시 순환',
+                    '냉각수 부족(에어 포켓) 또는 냉각수 온도 센서(ECT) 특성 드리프트',
+                    '냉각팬 상시 구동 릴레이/제어 이상'
+                ],
+                checkpoints: [
+                    '냉간 시동 후 워밍업 중 라디에이터 상부 호스가 초기부터 서서히 따뜻해지면 서모스탯 열림 고착 확정',
+                    '스캔툴 ECT 센서 온도와 적외선 온도계로 측정한 서모스탯 하우징 실측 온도 비교',
+                    '냉각수 레벨 및 에어 빼기 상태 확인'
+                ],
+                tags: ['cooling']
+            }
+        };
+
+        for (let cyl = 2; cyl <= 8; cyl++) {
+            const codeKey = `P030${cyl}`;
+            dtcCoreData[codeKey] = {
+                ...dtcCoreData.P0301,
+                code: codeKey,
+                titleKo: `${cyl}번 기통 실화 감지`,
+                titleEn: `Cylinder ${cyl} Misfire Detected`,
+                trigger: `${cyl}번 기통 연소 행정 직후 크랭크샤프트 회전 가속도가 기준치에 미달할 때 발생`,
+                causes: [
+                    `${cyl}번 기통 점화코일(COP) 절연 파괴 또는 점화플러그 마모/오염(오일 누유 침수 포함)`,
+                    `${cyl}번 인젝터 단선/막힘 또는 배선 커넥터 접촉 불량`,
+                    `${cyl}번 기통 압축압력 저하(밸브 씰/시트 불량, 헤드 가스켓, 피스톤 링)`
+                ],
+                checkpoints: [
+                    `${cyl}번 점화코일을 인접 정상 기통과 맞교환 후 실화 코드 이동 여부 확인`,
+                    `${cyl}번 점화플러그 전극 상태 및 플러그 홀 오일 침수 여부 점검`,
+                    `${cyl}번 인젝터 작동/저항 및 실린더 압축압력 측정`
+                ]
+            };
+        }
+
+        const DTC_COMMON_TAG_LABELS = {
+            air_leak: '흡기 덕트/진공 호스/PCV 계통 미계측 공기(진공) 누설',
+            maf: '질량 공기유량(MAF) 센서 오염 또는 출력 왜곡',
+            fuel_pressure: '연료펌프 토출압 저하 또는 연료압 레귤레이터/필터 이상',
+            fuel_trim: '공연비 보정(STFT/LTFT) 한계 초과 — 트림 데이터 동시 모니터링 필요',
+            misfire: '점화(플러그·코일) 또는 연료 분사 불균형으로 인한 실화',
+            ignition: '점화코일·점화플러그 및 1차/2차 점화 회로 점검',
+            evap: '연료탱크·주유구 캡·퍼지/벤트 밸브 증발가스 기밀 이상'
+        };
+
+        function parseDtcTokens(rawInput) {
+            const cleaned = String(rawInput || '').trim().toUpperCase();
+            if (!cleaned) return [];
+            const tokens = cleaned.split(/[\s,;\/]+/).filter(Boolean);
+            if (!tokens.length) return [];
+            const dtcRegex = /^[PBCU][0-3][0-9A-F]{3}$/;
+            if (!tokens.every(t => dtcRegex.test(t))) return [];
+            return Array.from(new Set(tokens));
+        }
+
+        function buildFallbackDtcInfo(code) {
+            const sysChar = code[0];
+            const typeChar = code[1];
+            const subChar = code[2];
+
+            const domainMap = {
+                P: '파워트레인 (Powertrain · 엔진/변속기)',
+                B: '차체 제어 (Body · 에어백/공조/도어)',
+                C: '섀시 제어 (Chassis · ABS/ESC/조향)',
+                U: '네트워크 통신 (Network · CAN/LIN 버스)'
+            };
+            const originMap = {
+                '0': 'SAE/ISO 표준 공통 코드 (전 제조사 공통 정의)',
+                '1': '제조사 전용 확장 코드 (Manufacturer Specific)',
+                '2': 'SAE 표준 확장 코드 (P2xxx 계열)',
+                '3': 'SAE/제조사 예약 확장 코드 (P3xxx 계열)'
+            };
+            const pSubsystemMap = {
+                '0': '연료 및 공기 계량 / 보조 배출가스 제어',
+                '1': '연료 및 공기 계량 (센서/연료트림/공연비)',
+                '2': '연료 및 공기 계량 (인젝터 회로/과급압/스로틀)',
+                '3': '점화 시스템 또는 실화 감지',
+                '4': '보조 배출가스 제어 (촉매 · EVAP · EGR · 2차 공기)',
+                '5': '차량 속도 · 공회전(ISC) 제어 및 보조 입력',
+                '6': 'ECU 내부 회로 및 출력 드라이버 제어',
+                '7': '변속기 제어 (Transmission)',
+                '8': '변속기 및 구동계 제어 (Transmission / AWD)',
+                '9': '변속기 및 클러치 액추에이터 제어'
+            };
+
+            const activeBrand = (typeof vinDecoded !== 'undefined' && vinDecoded && vinDecoded.make)
+                ? vinDecoded.make
+                : (typeof currentBrand !== 'undefined' && currentBrand !== 'ALL' ? currentBrand : '');
+
+            const subsystemDesc = sysChar === 'P'
+                ? (pSubsystemMap[subChar] || '파워트레인 세부 제어 계통')
+                : `${domainMap[sysChar] || '차량 제어'} 서브시스템 (${subChar}번 그룹)`;
+
+            return {
+                code,
+                isFallback: true,
+                system: `${domainMap[sysChar] || sysChar} · ${subsystemDesc}`,
+                titleKo: `${originMap[typeChar] || 'OBD-II 진단 코드'} (${code})`,
+                titleEn: `${typeChar === '1' ? 'Manufacturer-Specific' : 'OBD-II Standard'} Diagnostic Trouble Code`,
+                trigger: `${subsystemDesc} 관련 센서 신호 범위 이탈, 회로 단선/단락 또는 제어 목표치 불일치 시 ECU/모듈이 기록합니다.`,
+                causes: [
+                    activeBrand
+                        ? `${activeBrand} 제조사 전용(${typeChar === '1' ? 'P1xxx' : code}) 상세 정의 코드 — 브랜드별 OEM 정비 매뉴얼/TSB 대조 필요`
+                        : '제조사·연식·엔진 사양에 따라 세부 부품 명칭이 달라질 수 있는 확장 코드',
+                    `${subsystemDesc} 관련 커넥터 접촉 불량, 배선 단선/단락 또는 전원·접지 이상`,
+                    '해당 계통 액추에이터/센서 단품 고장 또는 선행 관련 코드에 의한 2차 파생 점등'
+                ],
+                checkpoints: [
+                    '스캔툴 프리즈 프레임(Freeze Frame) 데이터에서 발생 당시 RPM·냉각수온·부하·차속 확인',
+                    '동반된 다른 고장코드가 있다면 먼저 발생한(Pending/Permanent) 코드부터 우선 점검',
+                    activeBrand
+                        ? `${activeBrand} 공식 서비스 매뉴얼 또는 TSB에서 "${activeBrand} ${code}" 검색으로 핀포인트 테스트 확인`
+                        : `차량 제조사명 + "${code}" 조합으로 OEM 핀포인트 테스트 절차 확인`
+                ],
+                tags: []
+            };
+        }
+
+        function renderDtcDiagnosis(codes) {
+            const section = document.getElementById('dtcResultSection');
+            const summaryEl = document.getElementById('dtcCommonSummary');
+            const container = document.getElementById('dtcCardContainer');
+            if (!section || !container) return;
+
+            if (!codes || !codes.length) {
+                section.classList.add('hidden');
+                container.innerHTML = '';
+                if (summaryEl) summaryEl.classList.add('hidden');
+                return;
+            }
+
+            const items = codes.map(c => dtcCoreData[c] || buildFallbackDtcInfo(c));
+
+            if (summaryEl) {
+                if (items.length >= 2) {
+                    const tagCounts = {};
+                    items.forEach(it => (it.tags || []).forEach(t => {
+                        tagCounts[t] = (tagCounts[t] || 0) + 1;
+                    }));
+                    const sharedTags = Object.entries(tagCounts)
+                        .filter(([, cnt]) => cnt >= 2)
+                        .sort((a, b) => b[1] - a[1]);
+
+                    if (sharedTags.length > 0) {
+                        summaryEl.innerHTML = `
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="bg-amber-400 text-slate-950 text-[11px] font-bold px-2 py-0.5 rounded">다중 DTC 교차 분석</span>
+                                <span class="text-xs text-amber-200 font-mono">${codes.join(' + ')}</span>
+                            </div>
+                            <p class="text-sm font-bold text-white mb-1">동시 점등 코드의 공통 의심 원인 (우선 점검 권장)</p>
+                            <ul class="list-disc list-inside text-xs text-amber-100 space-y-0.5">
+                                ${sharedTags.map(([tag, cnt]) => `<li>${escapeHtml(DTC_COMMON_TAG_LABELS[tag] || tag)} <span class="text-amber-300">(${cnt}개 코드 연관)</span></li>`).join('')}
+                            </ul>
+                        `;
+                        summaryEl.classList.remove('hidden');
+                    } else {
+                        summaryEl.classList.add('hidden');
+                    }
+                } else {
+                    summaryEl.classList.add('hidden');
+                }
+            }
+
+            container.className = items.length > 1
+                ? 'grid grid-cols-1 xl:grid-cols-2 gap-4'
+                : 'grid grid-cols-1 max-w-3xl gap-4';
+
+            container.innerHTML = items.map(item => {
+                const badgeHtml = item.isFallback
+                    ? `<span class="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-bold px-2 py-0.5 rounded">규칙 기반 계통 분석</span>`
+                    : `<span class="bg-rose-100 text-rose-800 border border-rose-300 text-[11px] font-bold px-2 py-0.5 rounded">핵심 DTC 진단 DB</span>`;
+
+                const activeVehicleHint = (typeof vinDecoded !== 'undefined' && vinDecoded && (vinDecoded.make || vinDecoded.model))
+                    ? `<span class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">현재 VIN 컨텍스트: ${escapeHtml(`${vinDecoded.year || ''} ${vinDecoded.make || ''} ${vinDecoded.model || ''}`.trim())}</span>`
+                    : '';
+
+                return `
+                    <article class="bg-white rounded-xl shadow-sm border ${item.isFallback ? 'border-amber-300' : 'border-rose-300'} overflow-hidden">
+                        <div class="p-4 bg-slate-900 text-white border-b border-slate-800">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono text-lg font-bold text-rose-400 tracking-wide">${escapeHtml(item.code)}</span>
+                                    ${badgeHtml}
+                                </div>
+                                <span class="text-[11px] text-slate-300 bg-slate-800 px-2 py-0.5 rounded">${escapeHtml(item.system)}</span>
+                            </div>
+                            <h3 class="text-base md:text-lg font-bold text-white">${escapeHtml(item.titleKo)}</h3>
+                            <p class="text-xs font-mono text-slate-400 mt-0.5">${escapeHtml(item.titleEn)}</p>
+                        </div>
+
+                        <div class="p-4 space-y-3 text-xs md:text-sm">
+                            ${activeVehicleHint ? `<div>${activeVehicleHint}</div>` : ''}
+
+                            <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">발생 조건 (Set Criteria)</span>
+                                <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(item.trigger)}</p>
+                            </div>
+
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-rose-700 block mb-1">주요 원인 (빈도순)</span>
+                                <ol class="space-y-1">
+                                    ${item.causes.map((c, i) => `
+                                        <li class="flex items-start gap-2 text-xs text-slate-700">
+                                            <span class="bg-rose-100 text-rose-800 font-bold rounded-full w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">${i + 1}</span>
+                                            <span>${escapeHtml(c)}</span>
+                                        </li>
+                                    `).join('')}
+                                </ol>
+                            </div>
+
+                            <div class="pt-2.5 border-t border-slate-100">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">현장 점검 포인트 (스캔툴 / 계측)</span>
+                                <ul class="space-y-1 bg-emerald-50/50 border border-emerald-100 rounded-lg p-2.5">
+                                    ${item.checkpoints.map(cp => `
+                                        <li class="flex items-start gap-1.5 text-xs text-slate-700">
+                                            <span class="text-emerald-600 font-bold shrink-0">✓</span>
+                                            <span>${escapeHtml(cp)}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            section.classList.remove('hidden');
+        }
+
+        (function attachDtcHandlers() {
+            const origHandleInput = window.handleInput;
+            const origHandleSearchSubmit = window.handleSearchSubmit;
+            const origSetBrandFilter = window.setBrandFilter;
+            const origClearSearch = window.clearSearch;
+
+            window.handleInput = function () {
+                const inputEl = document.getElementById('searchInput');
+                const val = inputEl ? inputEl.value.trim().toUpperCase() : '';
+                const dtcCodes = parseDtcTokens(val);
+
+                if (dtcCodes.length > 0) {
+                    if (typeof hideSuggestions === 'function') hideSuggestions();
+                    if (typeof renderTimer !== 'undefined') clearTimeout(renderTimer);
+                    renderDtcDiagnosis(dtcCodes);
+                    if (activeVinMatch === null) {
+                        const rc = document.getElementById('resultCount');
+                        if (rc) rc.textContent = `DTC 고장코드 진단 모드 (${dtcCodes.join(', ')}) · 차종명 또는 17자리 VIN 입력 시 차량 제원 표시`;
+                    }
+                    return;
+                }
+
+                renderDtcDiagnosis([]);
+                if (typeof origHandleInput === 'function') origHandleInput.apply(this, arguments);
+            };
+
+            window.handleSearchSubmit = function () {
+                const inputEl = document.getElementById('searchInput');
+                const val = inputEl ? inputEl.value.trim().toUpperCase() : '';
+                const dtcCodes = parseDtcTokens(val);
+
+                if (dtcCodes.length > 0) {
+                    if (typeof hideSuggestions === 'function') hideSuggestions();
+                    renderDtcDiagnosis(dtcCodes);
+                    return;
+                }
+
+                renderDtcDiagnosis([]);
+                if (typeof origHandleSearchSubmit === 'function') origHandleSearchSubmit.apply(this, arguments);
+            };
+
+            window.setBrandFilter = function () {
+                renderDtcDiagnosis([]);
+                if (typeof origSetBrandFilter === 'function') origSetBrandFilter.apply(this, arguments);
+            };
+
+            window.clearSearch = function () {
+                renderDtcDiagnosis([]);
+                if (typeof origClearSearch === 'function') origClearSearch.apply(this, arguments);
+            };
         })();
 
         // 초기 실행
