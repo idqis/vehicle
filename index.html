@@ -4687,9 +4687,65 @@
 
         // VIN 조회 시 NHTSA 모델명과 일치하는 차량 카드 우선 표시
         let vinModelHint = '';
+        let vinDecoded = null;      // NHTSA vPIC 디코딩 원본 값 (엔진/타이어는 이 값을 우선 표시)
+        let vinEngineHint = null;   // VIN 디코딩 결과(배기량·터보·하이브리드) - 엔진 줄/용량 표 강조용
         function vehicleMatchesHint(key) {
             const h = compactText(vinModelHint), k = compactText(key);
             return h.length >= 2 && k.length >= 2 && (h.includes(k) || k.includes(h));
+        }
+
+        // NHTSA 디코딩 엔진과 DB 엔진/용량 줄을 연결: 엔진 코드 > 배기량(±0.12L) > 터보/하이브리드 > 연식(괄호 안 연식 범위)
+        function vinEngineMatchIdx(texts) {
+            const h = vinEngineHint;
+            if (activeVinMatch === null || !h) return [];
+            const norm = t => String(t).toUpperCase().replace(/[\s-]/g, '');
+            // 1) NHTSA 엔진 코드 (예: VR30DDTT, 2GR-FE)가 DB 텍스트에 있으면 최우선
+            const code = norm(h.engineModel || '');
+            if (code.length >= 3) {
+                const byCode = [];
+                texts.forEach((t, i) => {
+                    const tokens = String(t).replace(/\([^)]*\)/g, ' ').split(/[\s\/·&,]+/).map(norm).filter(tk => tk.length >= 3 && /\d/.test(tk) && /[A-Z]/.test(tk) && !tk.includes('.'));
+                    if (tokens.some(tk => code.includes(tk) || tk.includes(code))) byCode.push(i);
+                });
+                if (byCode.length) return byCode;
+            }
+            if (!(h.dispL > 0)) return [];
+            // 2) 배기량
+            const disps = t => (String(t).match(/\d\.\d/g) || []).map(parseFloat);
+            let idx = [];
+            texts.forEach((t, i) => { if (disps(t).some(d => Math.abs(d - h.dispL) <= 0.12)) idx.push(i); });
+            if (idx.length > 1) {
+                // 3) 터보 / 하이브리드
+                const isTurbo = t => /turbo|t-gdi|\d\.\dT\b/i.test(t);
+                const isHyb = t => /hybrid|hev|fxs|fxe/i.test(t);
+                let r = idx.filter(i => isTurbo(texts[i]) === !!h.isTurboBool);
+                if (r.length) idx = r;
+                r = idx.filter(i => isHyb(texts[i]) === !!h.isHybridBool);
+                if (r.length) idx = r;
+            }
+            if (idx.length > 1 && h.year > 0) {
+                // 4) NHTSA 연식 - "(2011~2024)", "(2019+)" 같은 연식 표기가 있는 줄만 비교
+                const inRange = t => {
+                    const m = String(t).match(/(\d{4})\s*~\s*(\d{4})?|(\d{4})\+/);
+                    if (!m) return null;
+                    const from = +(m[1] || m[3]), to = m[2] ? +m[2] : 9999;
+                    return h.year >= from && h.year <= to;
+                };
+                const r = idx.filter(i => inRange(texts[i]) !== false);
+                if (r.length) idx = r;
+            }
+            return idx;
+        }
+
+        // NHTSA 디코딩 값으로 만든 엔진 표기 (예: "3.0L V6 Turbo · VR30DDTT · 300 hp · Gasoline")
+        function nhtsaEngineText() {
+            const d = vinDecoded;
+            if (!d || !(d.dispL > 0 || d.engineModel)) return '';
+            const cfgLetter = /v-?shaped|^v\b/i.test(d.config) ? 'V' : /in-?line|straight/i.test(d.config) ? 'I' : /flat|opposed|boxer/i.test(d.config) ? 'H' : '';
+            const cyl = d.cylinders ? (cfgLetter ? cfgLetter + d.cylinders : d.cylinders + '-Cyl') : '';
+            const main = [d.dispL > 0 ? d.dispL.toFixed(1) + 'L' : '', cyl, d.isTurboBool ? 'Turbo' : '', d.isHybridBool ? 'Hybrid' : ''].filter(Boolean).join(' ');
+            const extra = [d.engineModel, d.hp ? Math.round(d.hp) + ' hp' : '', d.fuel].filter(Boolean);
+            return [main].concat(extra).filter(Boolean).join(' · ');
         }
 
         function engineSortValue(key) {
@@ -4852,6 +4908,14 @@
                 const isHybridBool = electrification.includes("hybrid") || electrification.includes("phev") || electrification.includes("hev") || electrification.includes("mild");
                 const isAwdBool = driveType.includes("AWD") || driveType.includes("4WD") || driveType.includes("ALL");
 
+                vinDecoded = {
+                    make, model, trim, year, dispL, cylinders,
+                    config: String(info.EngineConfiguration || '').trim(),
+                    engineModel: String(info.EngineModel || '').trim(),
+                    hp: parseFloat(info.EngineHP) || 0,
+                    fuel: String(info.FuelTypePrimary || '').trim(),
+                    isTurboBool, isHybridBool, driveType, tireFront, tireRear
+                };
                 const decodedSummaryTitle = `${year || ''} ${make} ${model} ${dispL ? dispL.toFixed(1) + 'L' : ''} ${isTurboBool ? 'Turbo' : ''}`.replace(/\s+/g, ' ').trim();
 
                 banner.classList.remove('hidden');
@@ -4906,7 +4970,7 @@
                     fallbackNotice.textContent = `ℹ️ 제조사 "${make || '미확인'}"는 등록된 자동차 브랜드와 정확히 일치하지 않아 제원 카드를 연결하지 않았습니다.`;
                     fallbackNotice.classList.remove('hidden');
                 } else {
-                    matchVehicleFromApi({ make, model: model.toLowerCase(), year, dispL, isTurboBool, isHybridBool });
+                    matchVehicleFromApi({ make, model: model.toLowerCase(), year, dispL, isTurboBool, isHybridBool, engineModel: String(info.EngineModel || '').trim() });
                 }
 
                 if (!excludedVehicleType && !excludedBodyClass && detectedBrand !== 'ALL' && isFallbackVinMatch) {
@@ -4985,6 +5049,7 @@
         function matchVehicleFromApi(apiSpec) {
             const targetBrand = detectBrandFromMake(apiSpec.make);
             vinModelHint = String(apiSpec.model || '').toLowerCase();
+            vinEngineHint = { dispL: apiSpec.dispL, isTurboBool: apiSpec.isTurboBool, isHybridBool: apiSpec.isHybridBool, year: apiSpec.year, engineModel: apiSpec.engineModel || '' };
 
             if (targetBrand === 'ALL') {
                 isFallbackVinMatch = false;
@@ -5000,10 +5065,16 @@
                 else if (targetBrand !== 'ALL' && item.brand !== targetBrand) score -= 100;
 
                 const normalizedModel = apiSpec.model.replace(/[\s-]/g, '');
-                const modelMatched = item.keywords.some(kw => {
+                const keywordMatched = item.keywords.some(kw => {
                     const normKw = kw.replace(/[\s-]/g, '');
                     return apiSpec.model.includes(kw) || normalizedModel.includes(normKw);
                 });
+                // 키워드에 없더라도 항목 내 차량명(카드 제목)과 일치하면 모델 일치로 인정
+                const vehicleMatched = !keywordMatched && normalizedModel.length >= 2 && getParsed(item).vehicles.some(v => {
+                    const k = v.key.toLowerCase().replace(/[\s-]/g, '');
+                    return k.length >= 2 && (normalizedModel.includes(k) || (normalizedModel.length >= 3 && k.includes(normalizedModel)));
+                });
+                const modelMatched = keywordMatched || vehicleMatched;
                 if (modelMatched) score += 60;
 
                 if (apiSpec.dispL > 0) {
@@ -5031,12 +5102,15 @@
                     }
                 }
 
-                return { item, score };
+                return { item, score, modelMatched };
             });
 
+            // 모델명이 디코딩되었다면, 모델명이 일치하는 항목만 'Exact'로 인정 (브랜드·연식·배기량만 맞는 엉뚱한 차종 방지)
+            const hasModel = String(apiSpec.model || '').replace(/[\s-]/g, '').length > 0;
             const exactMatches = scored
-                .filter(entry => entry.score >= 55)
+                .filter(entry => entry.score >= 55 && (entry.modelMatched || !hasModel))
                 .sort((a, b) => b.score - a.score);
+            const modelMatchedMap = new Map(scored.map(e => [e.item, e.modelMatched]));
 
             if (exactMatches.length > 0) {
                 isFallbackVinMatch = false;
@@ -5062,6 +5136,7 @@
                     if (apiSpec.year > 0 && apiSpec.year >= item.yearRange[0] && apiSpec.year <= item.yearRange[1]) {
                         fallbackScore += 30;
                     }
+                    if (modelMatchedMap.get(item)) fallbackScore += 100;   // 모델명이 같은 항목을 가장 가까운 후보로 우선
                     return { item, fallbackScore, dispDiff };
                 })
                 .sort((a, b) => (b.fallbackScore - a.fallbackScore) || (a.dispDiff - b.dispDiff));
@@ -5212,11 +5287,29 @@
                 // 라벨이 없는 한 줄짜리는 이 카드의 엔진명을 왼쪽에 표시
                 const engLabel = (engineTexts || []).filter(Boolean).join(' · ');
                 const all = [{ label: '엔진', value: 'Capacity', muted: true }].concat(body);
-                const rowsHtml = all.map(r => {
+                // VIN 엔진과 일치하는 용량 줄 강조 (배기량이 표기된 줄만 대상으로 비일치 줄은 흐리게)
+                let bIdx = vinEngineMatchIdx(body.map(r => r.label || (many ? '' : engLabel)));
+                // 일치한 엔진 줄의 엔진 코드(예: VK56VD)가 용량 라벨에 있으면 그 줄로 더 좁힘
+                if (bIdx.length > 1 && engineTexts) {
+                    const codes = [];
+                    vinEngineMatchIdx(engineTexts).forEach(ei => String(engineTexts[ei]).replace(/\([^)]*\)/g, ' ').split(/[\s\/·&,]+/).forEach(tk => {
+                        if (tk.length >= 3 && !tk.includes('.') && /[A-Z]/i.test(tk) && /\d/.test(tk)) {
+                            codes.push(tk.toUpperCase());
+                            if (tk.includes('-') && tk.split('-')[0].length >= 3) codes.push(tk.split('-')[0].toUpperCase());
+                        }
+                    }));
+                    const labs = body.map(r => String(r.label || '').toUpperCase());
+                    const refined = bIdx.filter(i => codes.some(c => labs[i].includes(c)));
+                    if (refined.length) bIdx = refined;
+                }
+                const rowsHtml = all.map((r, ri) => {
                     const label = r.label || (many ? '기타' : engLabel);
                     const longVal = !r.muted && String(r.value).length > 24;
-                    return `<div class="flex items-baseline justify-between gap-3 py-1 border-t border-blue-100 first:border-t-0">
-                        <span class="text-xs ${r.muted ? 'text-blue-400' : 'text-blue-800'} min-w-0">${label}</span>
+                    const vinOn = !r.muted && bIdx.includes(ri - 1);
+                    const vinDim = !r.muted && bIdx.length > 0 && !vinOn && /\d\.\d/.test(label);
+                    const vinChip = vinOn ? ' <span class="ml-1 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded align-middle">VIN</span>' : '';
+                    return `<div class="flex items-baseline justify-between gap-3 py-1 border-t border-blue-100 first:border-t-0 ${vinOn ? 'bg-emerald-50 rounded px-1' : ''} ${vinDim ? 'opacity-50' : ''}">
+                        <span class="text-xs ${r.muted ? 'text-blue-400' : (vinOn ? 'text-emerald-900 font-semibold' : 'text-blue-800')} min-w-0">${label}${vinChip}</span>
                         <span class="${r.muted ? 'font-medium text-blue-500 text-xs' : 'font-bold text-blue-900 text-sm'} ${longVal ? 'text-right' : 'whitespace-nowrap'}">${r.value}</span>
                     </div>`;
                 }).join('');
@@ -5348,16 +5441,41 @@
                 const tagHtml = car.tag
                     ? `<span class="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">${escapeHtml(car.tag)}</span>`
                     : '';
-                const engineRowsHtml = car.engineRows.map(e => {
-                    const on = viewMode === 'ENGINE' && e.keys.includes(viewKey);
+                const vinIdx = vinEngineMatchIdx(car.engineRows.map(e => e.text));
+                const engineRowsHtml = car.engineRows.map((e, ei) => {
+                    const vinOn = vinIdx.includes(ei);
+                    const vinDim = vinIdx.length > 0 && !vinOn;
+                    const on = (viewMode === 'ENGINE' && e.keys.includes(viewKey)) || vinOn;
                     const usersHtml = e.users.map(k => k === vehicle.key
                         ? `<span class="font-semibold text-slate-700">${escapeHtml(k)}</span>`
                         : `<span>${escapeHtml(k)}</span>`).join(' · ');
-                    return `<div class="flex items-start justify-between gap-3 rounded border px-2 py-1.5 ${on ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white'}">
-                        <button type="button" onclick="selectViewEnc('ENGINE','${encKey(e.keys[0])}')" class="text-left text-xs hover:underline ${on ? 'font-semibold text-emerald-900' : 'font-medium text-slate-700'}">${highlightHtml(e.text)}</button>
+                    return `<div class="flex items-start justify-between gap-3 rounded border px-2 py-1.5 ${on ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white'} ${vinDim ? 'opacity-50' : ''}">
+                        <button type="button" onclick="selectViewEnc('ENGINE','${encKey(e.keys[0])}')" class="text-left text-xs hover:underline ${on ? 'font-semibold text-emerald-900' : 'font-medium text-slate-700'}">${highlightHtml(e.text)}${vinOn ? ' <span class="ml-1 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded align-middle">NHTSA 일치</span>' : ''}</button>
                         <span class="text-[10px] leading-tight text-slate-400 text-right max-w-[45%] shrink-0">${usersHtml}</span>
                     </div>`;
                 }).join('');
+
+                // VIN 조회 결과 카드: NHTSA가 제공하는 값(엔진, 타이어 사이즈)은 NHTSA 우선, 없으면 DB
+                const vinPrimary = !!(activeVinMatch !== null && !isFallbackVinMatch && vinDecoded && (!vinModelHint || vehicleMatchesHint(vehicle.key)));
+                const nhtsaTxt = vinPrimary ? nhtsaEngineText() : '';
+                const nhtsaTire = vinPrimary && (vinDecoded.tireFront || vinDecoded.tireRear);
+                const vinEngineBlock = nhtsaTxt
+                    ? `<div class="flex items-start justify-between gap-3 rounded border border-emerald-500 bg-emerald-50 px-2 py-1.5">
+                            <span class="text-xs font-semibold text-emerald-900">${escapeHtml(nhtsaTxt)}</span>
+                            <span class="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0">NHTSA</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">DB 등록 엔진 · 오일 용량 연결 기준</div>${engineRowsHtml}`
+                    : engineRowsHtml;
+                const tireHtml = nhtsaTire
+                    ? `<span class="font-semibold text-slate-800 text-xs">Front ${escapeHtml(vinDecoded.tireFront || '-')} / Rear ${escapeHtml(vinDecoded.tireRear || '-')} <span class="ml-1 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded align-middle">NHTSA</span></span>
+                       <span class="block text-[11px] text-slate-400 mt-0.5">DB 등록: ${car.tireSize}</span>`
+                    : `<span class="font-semibold text-slate-800 text-xs">${car.tireSize}</span>`;
+                const nhtsaParts = [nhtsaTxt ? '엔진' : '', nhtsaTire ? '타이어 사이즈' : ''].filter(Boolean);
+                const vinSourceNote = vinPrimary
+                    ? `<div class="px-4 pt-3 text-[11px] leading-snug text-slate-500">ℹ️ ${nhtsaParts.length
+                        ? `NHTSA 디코딩 값: ${nhtsaParts.join(', ')} / DB 기준: 오일 용량·규격·필터·토크·공기압·TPMS 등 (NHTSA 미제공 항목)`
+                        : 'NHTSA가 이 VIN의 엔진·타이어 정보를 제공하지 않아 모든 항목이 DB 기준입니다.'}</div>`
+                    : '';
 
                 const stepsHtml = car.resetSteps.map((step, idx) => 
                     `<li class="flex items-start gap-2 text-xs md:text-sm text-slate-700">
@@ -5384,10 +5502,11 @@
                                 <h2 class="text-lg font-bold text-slate-900 cursor-pointer hover:underline" onclick="selectViewEnc('VEHICLE','${encKey(vehicle.key)}')">${highlightHtml(car.title)}</h2>
                                 ${tagHtml ? `<div class="mb-1.5">${tagHtml}</div>` : ''}
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mt-3 mb-1">엔진 <span class="normal-case font-normal">· 우측: 해당 엔진 사용 차종</span></span>
-                                <div class="flex flex-col gap-1">${engineRowsHtml}</div>
+                                <div class="flex flex-col gap-1">${vinEngineBlock}</div>
                                 ${formatSharedHtml(car)}
                             </div>
 
+${vinSourceNote}
                             <!-- 2. 엔진오일 & 타이어/휠 제원 그리드 -->
                             <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm border-b border-slate-100">
                                 <div class="bg-blue-50/60 border border-blue-100 p-2.5 rounded-lg">
@@ -5419,7 +5538,7 @@
                                 </div>
                                 <div class="bg-slate-50 p-2.5 rounded-lg sm:col-span-2">
                                     <span class="text-xs text-slate-500 block">Standard Tire Sizes</span>
-                                    <span class="font-semibold text-slate-800 text-xs">${car.tireSize}</span>
+                                    ${tireHtml}
                                 </div>
                             </div>
 
