@@ -5891,13 +5891,535 @@ ${vinSourceNote}
             evap: '연료탱크·주유구 캡·퍼지/벤트 밸브 증발가스 기밀 이상'
         };
 
+        // ==========================================================
+        // [DTC 핵심 DB 확장] SAE J2012 기준 P/U 코드 약 300개 추가
+        //  - 기존 정밀 항목(dtcCoreData)은 덮어쓰지 않고, 없는 코드만 같은 스키마로 추가
+        //  - 점검 포인트 접두: [스캔툴] 라이브 데이터 / [멀티미터·스코프] 계측 / [육안·기타]
+        //  ※ 일반 정비 절차 기준의 참고 정보이며, 제조사 서비스 매뉴얼/TSB가 우선합니다.
+        // ==========================================================
+        Object.assign(DTC_COMMON_TAG_LABELS, {
+            catalyst: '촉매 효율 저하 또는 배압 증가 — 선행 실화·연료트림 코드를 먼저 해결',
+            o2_sensor: '산소(A/F) 센서 열화·오염·히터 회로 — 전/후방 센서 파형 비교',
+            exhaust_leak: '배기 매니폴드/촉매 연결부 누설로 인한 산소 판독 왜곡',
+            cooling: '서모스탯 고착·냉각수 부족·수온센서 이상',
+            injector: '인젝터 막힘·누유·구동 회로 이상',
+            battery_voltage: '배터리·발전기 출력 불량 또는 전압 강하 (저전압 시 다수 코드 동시 점등)',
+            ground_power: 'ECU/센서 접지 포인트 부식 및 공통 전원(퓨즈·릴레이) 불량',
+            wiring: '배선·커넥터 단선/단락/접촉 불량 — 핀 접촉·수분 침투 확인',
+            ecu_software: 'ECU 내부 불량 또는 제조사 TSB·리프로그래밍 대상',
+            atf: '변속기 오일(ATF) 양·오염·유압 저하·필터 막힘',
+            can_bus: 'CAN 통신 배선(종단 저항)·모듈 전원/접지·퓨즈 불량',
+            engine_mechanical: '엔진 기계적 문제 (압축 저하·밸브/타이밍 체인 늘어남·가스켓 누설)',
+            engine_oil: '엔진 오일 부족/점도 불일치/슬러지 — VVT·오일압 계통에 영향',
+            fuel_quality: '연료 오염·수분·저옥탄 연료',
+            ref_5v: '센서 공통 5V 기준전압 이상 — 여러 센서 코드가 동시에 점등',
+            throttle_body: '스로틀바디 오염·모터/위치센서 불량·스로틀 학습 필요',
+            boost_system: '과급계 누설·웨이스트게이트/부스트 솔레노이드·인터쿨러 호스 이탈',
+            egr: 'EGR 밸브 고착·통로 카본 막힘',
+            aftertreatment: 'DPF/SCR 후처리 장치 막힘 또는 센서 불량',
+            hv_system: '하이브리드 고전압 배터리·인버터·HV 인터락 계통',
+            trans_solenoid: '변속기 솔레노이드·밸브바디 마모/고착, TCM 불량',
+            speed_sensor: '입·출력 속도센서 / 휠 속도센서 / 톤링 불량'
+        });
+        const DTC_TAG_ALIAS = {
+            vac: 'air_leak', maf: 'maf', fuelp: 'fuel_pressure', inj: 'injector', ign: 'ignition', batt: 'battery_voltage', gnd: 'ground_power',
+            harn: 'wiring', ecu: 'ecu_software', exh: 'exhaust_leak', o2: 'o2_sensor', cat: 'catalyst', cool: 'cooling', fluid: 'atf', can: 'can_bus',
+            mech: 'engine_mechanical', oil: 'engine_oil', fuelq: 'fuel_quality', evap: 'evap', ref5v: 'ref_5v', tb: 'throttle_body', sens: null,
+            turbo: 'boost_system', egr: 'egr', dpf: 'aftertreatment', hv: 'hv_system', tcm: 'trans_solenoid', spd: 'speed_sensor'
+        };
+        const DTC_SYS_RANGES = [
+            [10, 25, '가변 밸브 타이밍 (VVT)'], [30, 64, '산소센서 히터 제어'], [87, 94, '연료 압력 제어'],
+            [100, 104, '연료 및 공기 계량 (MAF 센서)'], [105, 109, '연료 및 공기 계량 (MAP 센서)'], [110, 114, '흡기온(IAT) 센서'], [115, 119, '냉각수온(ECT) 센서'],
+            [120, 124, '스로틀/페달 위치센서 A'], [125, 128, '냉각 / 연료 제어'], [130, 167, '산소(A/F) 센서'], [170, 175, '연료 및 공기 계량 (연료 트림)'],
+            [190, 194, '연료 레일 압력센서'], [200, 208, '인젝터 회로'], [220, 224, '스로틀/페달 위치센서 B'], [230, 233, '연료 펌프 회로'], [235, 239, '과급압 센서'],
+            [243, 246, '과급 제어 (웨이스트게이트)'], [299, 299, '과급 제어 (언더부스트)'], [300, 316, '점화 / 실화 감지'], [325, 334, '노크 센서'],
+            [335, 349, '크랭크/캠 위치센서'], [350, 358, '점화코일 회로'], [400, 409, '배기가스 재순환 (EGR)'], [410, 419, '2차 공기 분사'], [420, 431, '촉매 변환기'],
+            [440, 457, '증발가스 제어 (EVAP)'], [460, 464, '연료 레벨 센서'], [480, 485, '냉각팬 제어'], [500, 503, '차속 센서'], [505, 513, '공회전(ISC) 제어'],
+            [520, 524, '엔진 오일압력'], [530, 533, 'A/C 냉매 압력센서'], [560, 563, '시스템 전압 (충전계)'], [571, 573, '브레이크 스위치'],
+            [600, 660, 'ECU 내부 회로 / 입출력 제어'], [670, 683, '글로우 플러그 제어 (디젤)'], [700, 799, '변속기 제어 (Transmission)']
+        ];
+        const DTC_SYS_EXACT = {
+            P0234: '과급 제어 (오버부스트)', P0627: '연료 펌프 제어 회로', P0628: '연료 펌프 제어 회로', P0629: '연료 펌프 제어 회로',
+            P2096: '연료 및 공기 계량 (후방 연료 트림)', P2097: '연료 및 공기 계량 (후방 연료 트림)', P2098: '연료 및 공기 계량 (후방 연료 트림)', P2099: '연료 및 공기 계량 (후방 연료 트림)',
+            P2187: '연료 및 공기 계량 (연료 트림)', P2188: '연료 및 공기 계량 (연료 트림)', P2189: '연료 및 공기 계량 (연료 트림)', P2190: '연료 및 공기 계량 (연료 트림)',
+            P2195: '산소(A/F) 센서', P2196: '산소(A/F) 센서', P2197: '산소(A/F) 센서', P2198: '산소(A/F) 센서', P2270: '산소(A/F) 센서', P2271: '산소(A/F) 센서', P2272: '산소(A/F) 센서', P2273: '산소(A/F) 센서',
+            P2263: '과급 제어 (부스트 성능)', P2002: '후처리 장치 (DPF)', P242F: '후처리 장치 (DPF)', P20EE: '후처리 장치 (SCR)',
+            P2452: '후처리 장치 (DPF 차압센서)', P2453: '후처리 장치 (DPF 차압센서)', P2454: '후처리 장치 (DPF 차압센서)', P2455: '후처리 장치 (DPF 차압센서)'
+        };
+        function dtcSystemOf(code) {
+            if (DTC_SYS_EXACT[code]) return DTC_SYS_EXACT[code];
+            if (code[0] === 'U') return '네트워크 통신 (CAN/LIN 버스)';
+            if (/^P0A/.test(code)) return '하이브리드/EV 추진 계통';
+            if (/^P21[0-3]\d$/.test(code)) return '전자 스로틀 제어 (ETC)';
+            const n = /^P0(\d{3})$/.test(code) ? parseInt(code.slice(2), 10) : -1;
+            const hit = DTC_SYS_RANGES.find(r => n >= r[0] && n <= r[1]);
+            return hit ? hit[2] : '파워트레인 (Powertrain)';
+        }
+        const dtcCheckText = c => c.replace(/^S:/, '[스캔툴] ').replace(/^M:/, '[멀티미터·스코프] ').replace(/^V:/, '[육안·기타] ');
+        // checks 접두: S: = 스캔툴 라이브 데이터 · M: = 멀티미터/오실로스코프 · V: = 육안/기타
+        function dtc(code, en, ko, trig, causes, checks, tags, flags) {
+            if (dtcCoreData[code]) return;   // 기존 정밀 항목은 유지
+            dtcCoreData[code] = Object.assign({
+                code, system: dtcSystemOf(code), titleKo: ko, titleEn: en, trigger: trig, causes: causes,
+                checkpoints: checks.map(dtcCheckText),
+                tags: Array.from(new Set((tags || []).map(t => (t in DTC_TAG_ALIAS ? DTC_TAG_ALIAS[t] : t)).filter(Boolean)))
+            }, flags || {});
+        }
+
+        const pc = n => 'P' + String(n).padStart(4, '0');
+        const CK_CIRCUIT = [
+            'M:센서 전원(5V 또는 12V)·접지·신호선 전압 측정 (키 ON)',
+            'V:커넥터 핀 접촉·배선 손상·수분 확인 (배선을 흔들며 값이 변하는지 확인)'
+        ];
+
+        // ---------- 센서 계열: 회로 / 범위·성능 / Low / High / 간헐 5종을 연속 코드로 생성 ----------
+        function addSensorFamily(start, en, ko, spec) {
+            const defs = [
+                [' Circuit', ' 회로 이상', '센서 회로의 단선/단락 또는 신호 불능을 ECU가 감지'],
+                [' Circuit Range/Performance', ' 범위/성능 이상', '신호는 존재하나 다른 센서·연산값과 맞지 않아 타당성 검사에 실패'],
+                [' Circuit Low', ' 신호 낮음', '센서 신호 전압이 하한 이하 (신호선 접지 단락·전원 개방·센서 불량)'],
+                [' Circuit High', ' 신호 높음', '센서 신호 전압이 상한 초과 (신호선 전원 단락·접지 개방·센서 불량)'],
+                [' Circuit Intermittent', ' 간헐 이상', '신호가 순간적으로 끊기거나 튀는 간헐 이상 (진동·열 조건에서 재현)']
+            ];
+            const c0 = spec.causes;
+            const causeBy = [
+                c0.concat(['커넥터·배선 단선/단락', '5V 레퍼런스·접지 불량', 'ECU']),
+                c0.concat(['센서 오염/노화로 인한 오측정', '관련 계통 누설·기계적 문제(타당성 불일치)', '다른 센서 이상의 영향']),
+                ['신호선 접지 단락 또는 센서 전원(5V) 개방', '센서 불량', '5V 레퍼런스 전압 저하', '커넥터 접촉 불량'],
+                ['신호선 전원 단락 또는 센서 접지 개방', '센서 불량', '센서 접지 불량', '커넥터 접촉 불량'],
+                ['커넥터 접촉 불량·배선 피로/마찰', '센서 불량 (열·진동 시)', '접지/전원 순간 불량']
+            ];
+            defs.forEach((d, i) => {
+                if (spec.only && !spec.only.includes(i)) return;   // 5종 패턴이 아닌 계열은 해당 코드만 생성
+                const tags = spec.tags.slice();
+                if (i === 0 || i === 4) tags.push('harn');
+                if (i === 2 || i === 3) tags.push('ref5v', 'harn');
+                dtc(pc(start + i), en + d[0], ko + d[1], d[2], causeBy[i], [spec.scan].concat(CK_CIRCUIT), tags);
+            });
+        }
+        addSensorFamily(100, 'Mass or Volume Air Flow (MAF)', 'MAF(흡입공기량) 센서', {
+            causes: ['MAF 센서 오염·불량', '에어필터 막힘 / MAF 하류 흡기 누설'],
+            scan: 'S:공회전·2500rpm에서 MAF(g/s)가 엔진 회전수·스로틀 개도·MAP 대비 타당한지 확인 (키 ON·엔진 OFF 시 0 근처)', tags: ['maf', 'vac', 'sens'] });
+        addSensorFamily(105, 'Manifold Absolute Pressure / Barometric Pressure (MAP)', 'MAP(흡기압/대기압) 센서', {
+            causes: ['MAP 센서 불량', '진공 호스 균열·막힘 / 흡기 누설'],
+            scan: 'S:키 ON·엔진 OFF 시 MAP값이 대기압(BARO)과 거의 같은지, 공회전 시 진공 상태로 내려가는지 확인', tags: ['vac', 'sens'] });
+        addSensorFamily(110, 'Intake Air Temperature (IAT) Sensor', '흡기온(IAT) 센서', {
+            causes: ['IAT 센서 불량·오염', '배선 접촉 불량'],
+            scan: 'S:냉간 시동 전 IAT가 주변 온도·ECT와 비슷한지 확인 (극단 값 -40℃ 또는 고온 고정 시 단선/단락 의심)', tags: ['sens'] });
+        addSensorFamily(115, 'Engine Coolant Temperature (ECT) Sensor', '냉각수온(ECT) 센서', {
+            causes: ['ECT 센서 불량', '서모스탯 이상·냉각수 부족 (온도 타당성 불일치)'],
+            scan: 'S:냉간 시동 전 ECT가 주변/IAT 온도와 비슷한지, 워밍업 곡선이 정상(약 80~100℃ 안정)인지 확인', tags: ['cool', 'sens'] });
+        addSensorFamily(120, 'Throttle/Pedal Position Sensor/Switch "A"', '스로틀/페달 위치센서 A', {
+            causes: ['TPS(스로틀 위치센서) 불량·마모', '스로틀바디 오염·고착'],
+            scan: 'S:스로틀 전개 시 개도(%)가 부드럽게 증가하는지, 서브 센서(B)와 일치하는지 확인', tags: ['tb', 'sens'] });
+        addSensorFamily(220, 'Throttle/Pedal Position Sensor/Switch "B"', '스로틀/페달 위치센서 B', {
+            causes: ['TPS B(서브) 센서 불량·마모', '스로틀바디 오염·고착'],
+            scan: 'S:센서 A/B 개도가 서로 일치(반전/오프셋 관계)하는지 확인', tags: ['tb', 'sens'] });
+        addSensorFamily(190, 'Fuel Rail Pressure Sensor "A"', '연료 레일 압력센서 A', {
+            causes: ['레일 압력센서 불량', '연료 압력 자체 이상(펌프/레귤레이터)'],
+            scan: 'S:목표 레일 압력 vs 실제 압력 비교, 키 ON 시 연료펌프 프라이밍 후 압력 상승 확인', tags: ['fuelp', 'sens'] });
+        addSensorFamily(235, 'Turbocharger/Supercharger Boost Pressure Sensor "A"', '터보/과급 부스트 압력센서 A', {
+            causes: ['부스트 압력센서 불량', '과급 배관 누설·막힘'],
+            scan: 'S:대기압 대비 부스트(MAP) 값이 키 ON 시 정상인지, 가속 시 목표 부스트를 따라가는지 확인', tags: ['turbo', 'sens'], only: [0, 1, 2, 3] });
+        addSensorFamily(450, 'Evaporative Emission System Pressure Sensor/Switch', 'EVAP 압력센서/스위치', {
+            causes: ['EVAP 압력(FTP) 센서 불량', 'EVAP 호스 막힘·벤트 밸브 고착'],
+            scan: 'S:FTP(연료탱크 압력) 값이 대기압 근처에서 안정적인지 확인, 벤트 밸브 닫음/열림 테스트 시 변화 관찰', tags: ['evap', 'sens'] });
+        addSensorFamily(460, 'Fuel Level Sensor "A"', '연료 레벨 센서 A', {
+            causes: ['연료 레벨(센더) 불량·접점 마모', '센더 배선·접지 불량'],
+            scan: 'S:연료량(%) 값이 계기판과 일치하는지, 탱크 레벨 변화에 따라 연속적으로 변하는지 확인', tags: ['sens'] });
+        addSensorFamily(520, 'Engine Oil Pressure Sensor/Switch', '엔진 오일압력 센서/스위치', {
+            causes: ['오일압 센서/스위치 불량', '실제 오일 압력 저하 가능성(오일 부족·오일펌프)'],
+            scan: 'S:엔진 오일압(해당 시) 값 확인, 기계식 게이지로 실제 오일압 교차 측정', tags: ['oil', 'sens'], only: [0, 1, 2, 3] });
+        addSensorFamily(710, 'Transmission Fluid Temperature Sensor "A"', '변속기 오일 온도센서 A', {
+            causes: ['ATF 온도센서 불량(밸브바디 내장형 포함)', 'ATF 과열(오일 부족·쿨러 막힘)'],
+            scan: 'S:ATF 온도가 ECT와 냉간 시 유사한지, 주행 후 합리적으로 상승하는지 확인', tags: ['fluid', 'sens'] });
+        addSensorFamily(705, 'Transmission Range Sensor "A" (PRNDL Input)', '변속기 레인지 센서 A (PRNDL 입력)', {
+            causes: ['변속 레버 위치 센서(인히비터 스위치) 불량·조정 불량', '시프트 케이블 조정 불량'],
+            scan: 'S:변속 레버 위치(P/R/N/D)를 바꿔가며 스캔툴 표시값이 레버와 일치하는지 확인', tags: ['tcm', 'sens'] });
+        addSensorFamily(715, 'Input/Turbine Speed Sensor "A"', '변속기 입력(터빈) 속도센서 A', {
+            causes: ['입력 속도센서 불량·마그네트/이물 부착', '센서 갭·고정 불량'],
+            scan: 'S:주행 중 입력축 속도가 엔진 회전수·토크컨버터 슬립과 타당한지, 출력 속도와 기어비가 맞는지 확인', tags: ['spd', 'fluid'], only: [0, 1] });
+        addSensorFamily(720, 'Output Speed Sensor', '변속기 출력 속도센서', {
+            causes: ['출력 속도센서 불량·이물 부착', '펄스 휠(톤링) 손상'],
+            scan: 'S:주행 중 출력 속도가 차속(VSS)·휠 속도와 일치하는지 확인', tags: ['spd', 'sens'], only: [0, 1] });
+        addSensorFamily(500, 'Vehicle Speed Sensor "A"', '차속 센서 A', {
+            causes: ['차속 센서/휠 속도센서 불량', '톤링 손상·이물 부착'],
+            scan: 'S:스캔툴 차속 값이 계기판 속도·휠 속도 센서 값과 일치하는지 확인', tags: ['spd', 'sens'], only: [0, 1, 2] });
+
+        // ---------- 실화 / 점화 ----------
+        const CK_MISFIRE = [
+            'S:기통별 실화 카운터(Misfire Counter)로 문제 기통 특정 후 STFT/LTFT·MAF 값 확인',
+            'S:코일/플러그/인젝터를 정상 기통과 교환한 뒤 실화가 따라 이동하는지 확인 (부품 구분)',
+            'M:점화코일 1차/2차 저항·전원·구동 신호, 인젝터 저항·구동 파형 확인',
+            'V:점화플러그 상태(마모·카본·오일·갭) 확인, 필요 시 압축/누설 시험'
+        ];
+        dtc('P0300', 'Random/Multiple Cylinder Misfire Detected', '다기통(랜덤) 실화 감지',
+            '크랭크축 회전 변동(CKP)으로 특정 기통이 아닌 여러 기통 또는 무작위 실화가 임계치를 초과. 촉매 손상 우려 시 MIL이 점멸',
+            ['점화플러그 마모·점화코일 불량 (다기통 동시 노후)', '연료 압력 저하 / 연료 품질 불량', '흡기 누설 또는 MAF 오염 (희박 실화)', 'EGR 밸브 고착(열림)', '캠/크랭크 센서·타이밍 불량·압축 저하', '인젝터 막힘'],
+            CK_MISFIRE, ['misfire', 'ign', 'fuelp', 'vac', 'maf', 'mech', 'fuelq']);
+        for (let n = 1; n <= 8; n++) {
+            dtc(pc(300 + n), 'Cylinder ' + n + ' Misfire Detected', n + '번 기통 실화 감지',
+                n + '번 기통의 연소 실패로 인한 크랭크축 속도 변동이 임계치를 초과. MIL 점멸 시 즉시 부하 운전 중단 권장',
+                [n + '번 기통 점화플러그 불량/갭 이상', n + '번 기통 점화코일·부트 불량', n + '번 기통 인젝터 막힘·구동 불량', '압축 불량 (밸브·링·헤드 가스켓)', '해당 기통 흡기 포트 누설'],
+                CK_MISFIRE, ['misfire', 'ign', 'inj', 'mech']);
+        }
+        dtc('P0313', 'Misfire Detected with Low Fuel', '연료 부족 상태 실화 감지', '연료 잔량이 매우 낮은 상태에서 실화가 감지됨', ['연료 잔량 부족(펌프 흡입 불량)', '연료 레벨 센서 오차', '연료 펌프 흡입 스트레이너 막힘'], ['S:연료 레벨 값과 실제 잔량 비교', 'V:연료를 보충한 뒤 코드 재현 여부 확인'], ['misfire', 'fuelp']);
+        dtc('P0316', 'Misfire Detected on Startup (First 1000 Revolutions)', '시동 직후(초기 1000회전) 실화 감지', '시동 후 처음 1000회전 이내에 실화가 감지됨 (냉간 시동 조건)', ['점화플러그 마모·젖음', '인젝터 누유(과다 분사)', '냉간 시 연료 압력 저하', '점화코일 열화'], CK_MISFIRE, ['misfire', 'ign', 'inj', 'fuelp']);
+        dtc('P0350', 'Ignition Coil Primary/Secondary Circuit', '점화코일 1차/2차 회로 이상', 'ECU가 점화코일 구동 회로 이상을 감지 (코일 구분 불가 시 일반 코드)', ['점화코일 불량', '코일 전원/접지·커넥터 불량', '점화 드라이버 불량'], ['M:코일 전원·접지·구동 신호 확인', 'S:실화 카운터로 해당 기통 확인'], ['ign', 'harn']);
+        'ABCDEFGH'.split('').forEach((ch, i) => {
+            dtc(pc(351 + i), 'Ignition Coil ' + ch + ' Primary/Secondary Circuit', '점화코일 ' + ch + ' 1차/2차 회로 이상 (' + (i + 1) + '번 기통)',
+                '점화코일 ' + ch + '(' + (i + 1) + '번 기통)의 구동 회로 이상(단선/단락)을 ECU가 감지',
+                ['점화코일 불량 (1차/2차 코일 단선·단락)', '코일 커넥터·배선·전원 불량', '점화 드라이버(ECU/이그나이터) 불량', '플러그 과다 마모로 인한 코일 부하 증가'],
+                ['M:코일 1차/2차 저항(제조사 사양), 전원(12V)·접지·구동 신호(스코프) 확인', 'S:해당 기통 실화 카운터 확인, 코일을 다른 기통과 교환해 코드 이동 확인', 'V:코일 부트 균열·탄 흔적, 플러그 상태 확인'], ['ign', 'harn']);
+        });
+        addSensorFamily(335, 'Crankshaft Position (CKP) Sensor "A"', 'CKP(크랭크축 위치) 센서 A', {
+            causes: ['CKP 센서 불량·마그네틱 이물', '타깃 휠(톤링) 손상·센서 갭 불량'],
+            scan: 'S:크랭킹 중 RPM 신호가 인식되는지, CMP와 동기(Cam/Crank 상관)되는지 확인. 필요 시 스코프로 CKP 파형 확인', tags: ['sens', 'mech'] });
+        addSensorFamily(340, 'Camshaft Position (CMP) Sensor "A" (Bank 1 or Single Sensor)', 'CMP(캠축 위치) 센서 A (뱅크1/단일)', {
+            causes: ['CMP 센서 불량', '타이밍 체인/벨트 늘어남·타이밍 불일치', '타깃 휠 손상'],
+            scan: 'S:크랭킹/공회전 중 캠 신호 유무·크랭크와의 상관 확인, 스코프로 CKP/CMP 파형 비교', tags: ['sens', 'mech'] });
+        addSensorFamily(345, 'Camshaft Position (CMP) Sensor "A" (Bank 2)', 'CMP(캠축 위치) 센서 A (뱅크2)', {
+            causes: ['CMP 센서 불량', '타이밍 체인/벨트 늘어남·타이밍 불일치', '타깃 휠 손상'],
+            scan: 'S:뱅크2 캠 신호 유무·크랭크와의 상관 확인, 스코프로 CKP/CMP 파형 비교', tags: ['sens', 'mech'] });
+        addSensorFamily(325, 'Knock Sensor 1 (Bank 1 or Single Sensor)', '노크 센서 1 (뱅크1/단일)', {
+            causes: ['노크 센서 불량·체결 토크 불량', '센서 배선(차폐) 손상·엔진 기계 소음'],
+            scan: 'S:노크 리타드/노크 카운트 값과 점화 시기 확인 (공회전·가속 시 비정상 값 여부)', tags: ['sens', 'harn'] });
+        addSensorFamily(330, 'Knock Sensor 2 (Bank 2)', '노크 센서 2 (뱅크2)', {
+            causes: ['노크 센서 불량·체결 토크 불량', '센서 배선(차폐) 손상·엔진 기계 소음'],
+            scan: 'S:뱅크2 노크 신호·점화 시기 지연량 확인', tags: ['sens', 'harn'] });
+
+        // ---------- VVT(가변 밸브 타이밍) ----------
+        const CK_VVT = [
+            'S:캠 타이밍 목표값 vs 실제값(Cam Advance/Retard 편차) 확인, OCV(오일 컨트롤 밸브) 듀티 확인',
+            'M:OCV 코일 저항·전원/구동 신호 확인',
+            'V:엔진 오일 양·상태·점도 확인, OCV 스크린/필터 막힘 점검'
+        ];
+        [['A', '흡기', 'Intake'], ['B', '배기', 'Exhaust']].forEach((cam, ci) => {
+            [1, 2].forEach(bank => {
+                const b0 = bank === 1 ? 10 : 20;
+                const off = ci === 0 ? 0 : 3;
+                const bn = '(Bank ' + bank + ')', bk = '(뱅크' + bank + ')';
+                dtc(pc(b0 + off), '"' + cam[0] + '" Camshaft Position Actuator Circuit ' + bn, '캠 포지션 액추에이터 ' + cam[0] + '(' + cam[1] + ') 회로 이상 ' + bk,
+                    'VVT 액추에이터(OCV) 구동 회로의 단선/단락을 ECU가 감지',
+                    ['OCV(VVT 솔레노이드) 코일 불량·커넥터 접촉 불량', '배선 단선/단락', 'ECU 드라이버 불량'], CK_VVT, ['harn', 'oil', 'sens']);
+                dtc(pc(b0 + off + 1), '"' + cam[0] + '" Camshaft Position - Timing Over-Advanced or System Performance ' + bn, '캠 타이밍 ' + cam[0] + '(' + cam[1] + ') 과진각/성능 이상 ' + bk,
+                    '실제 캠 위상이 목표보다 과도하게 진각되었거나 VVT 작동 성능이 기준에 미달',
+                    ['엔진 오일 부족·점도 불일치·슬러지', 'OCV 고착/스크린 막힘', 'VVT 페이저(액추에이터) 마모·고착', '타이밍 체인 늘어남/타이밍 불일치'], CK_VVT, ['oil', 'mech', 'sens']);
+                dtc(pc(b0 + off + 2), '"' + cam[0] + '" Camshaft Position - Timing Over-Retarded ' + bn, '캠 타이밍 ' + cam[0] + '(' + cam[1] + ') 과지각 ' + bk,
+                    '실제 캠 위상이 목표보다 과도하게 지각됨 (VVT가 원하는 각도까지 못 감)',
+                    ['엔진 오일 부족·점도 불일치·슬러지', 'OCV 고착/스크린 막힘', 'VVT 페이저 마모·고착', '타이밍 체인 늘어남/타이밍 불일치'], CK_VVT, ['oil', 'mech', 'sens']);
+            });
+        });
+        [['A', 'Bank 1', '뱅크1', 16], ['B', 'Bank 1', '뱅크1', 17], ['A', 'Bank 2', '뱅크2', 18], ['B', 'Bank 2', '뱅크2', 19]].forEach(([s, b, bk, n]) => {
+            dtc(pc(n), 'Crankshaft Position - Camshaft Position Correlation (' + b + ' Sensor ' + s + ')', '크랭크 - 캠 위치 상관 불일치 (' + bk + ' 센서 ' + s + ')',
+                '크랭크축 신호와 캠축 신호의 위상 관계가 기준에서 벗어남 (타이밍 어긋남 또는 센서 신호 이상)',
+                ['타이밍 체인/벨트 늘어남·1~2치 이탈', 'VVT 페이저/OCV 불량', 'CKP/CMP 센서 불량·톤링 손상', '엔진 오일 상태 불량'],
+                ['S:크랭크/캠 동기 신호·캠 타이밍 편차 확인', 'M:스코프로 CKP/CMP 파형 동시 비교 (위상 확인)', 'V:타이밍 체인 늘어남·가이드/텐셔너 점검, 오일 상태 확인'], ['mech', 'oil', 'sens']);
+        });
+
+        // ---------- 연료 보정 (희박 / 농후) ----------
+        const CK_LEAN = [
+            'S:STFT/LTFT를 공회전과 2500rpm에서 비교 - 공회전에서만 크게 (+)면 흡기 누설, 고회전에서도 (+)면 연료 공급·MAF 의심 (±10% 이상 지속 시 이상)',
+            'S:MAF(g/s)·MAP·전방 산소센서 값 확인',
+            'M:연료 압력 게이지로 압력 측정(제조사 사양 비교)',
+            'V:연기 테스트(스모크 머신)로 흡기·PCV 누설, 산소센서 앞단 배기 누설 점검'
+        ];
+        const CK_RICH = [
+            'S:STFT/LTFT가 (-)로 크게 치우쳤는지, 퍼지 밸브 작동 시(EVAP) 변화 확인',
+            'S:MAF·ECT·전방 산소센서 값 확인, 인젝터 분사 시간 확인',
+            'M:연료 압력(과다 여부)·리턴 라인 확인',
+            'V:에어필터 막힘, 인젝터 누유/점화플러그 젖음, 오일에서 연료 냄새 확인'
+        ];
+        const lean = (code, en, ko, bank) => dtc(code, en, ko, 'ECU의 연료 보정(LTFT+STFT)이 한계까지 (+) 보정했음에도 공연비가 희박한 상태가 지속됨 (' + bank + ')',
+            ['흡기 누설 (MAF 하류 진공 호스·인테이크 가스켓·PCV)', 'MAF 센서 오염 / 에어필터 막힘', '연료 압력 저하 (펌프·필터·레귤레이터)', '인젝터 막힘·구동 불량', '산소센서 앞단 배기 누설', '전방 산소센서 열화'], CK_LEAN, ['fuel_trim', 'vac', 'maf', 'fuelp', 'inj', 'exh', 'o2']);
+        const rich = (code, en, ko, bank) => dtc(code, en, ko, 'ECU의 연료 보정이 한계까지 (-) 보정했음에도 공연비가 농후한 상태가 지속됨 (' + bank + ')',
+            ['인젝터 누유·과다 분사', '연료 압력 과다 (레귤레이터/리턴 불량)', '퍼지 밸브 고착(열림) → 증발가스 과다 유입', 'MAF 센서 오차·에어필터 막힘', 'ECT 센서 불량(냉간 판단)', '전방 산소센서 열화'], CK_RICH, ['fuel_trim', 'inj', 'fuelp', 'evap', 'maf', 'o2']);
+        lean('P0171', 'System Too Lean (Bank 1)', '연료 시스템 희박 (뱅크1)', '뱅크1');
+        rich('P0172', 'System Too Rich (Bank 1)', '연료 시스템 농후 (뱅크1)', '뱅크1');
+        lean('P0174', 'System Too Lean (Bank 2)', '연료 시스템 희박 (뱅크2)', '뱅크2');
+        rich('P0175', 'System Too Rich (Bank 2)', '연료 시스템 농후 (뱅크2)', '뱅크2');
+        dtc('P0170', 'Fuel Trim Malfunction (Bank 1)', '연료 보정 이상 (뱅크1)', '연료 보정값이 정상 범위를 벗어났으나 희박/농후 방향이 특정되지 않음', ['인젝터·연료 압력·흡기 누설 복합 문제', '산소센서 불량'], CK_LEAN, ['fuel_trim', 'vac', 'fuelp', 'o2']);
+        dtc('P0173', 'Fuel Trim Malfunction (Bank 2)', '연료 보정 이상 (뱅크2)', '연료 보정값이 정상 범위를 벗어났으나 희박/농후 방향이 특정되지 않음', ['인젝터·연료 압력·흡기 누설 복합 문제', '산소센서 불량'], CK_LEAN, ['fuel_trim', 'vac', 'fuelp', 'o2']);
+        dtc('P2096', 'Post Catalyst Fuel Trim System Too Lean (Bank 1)', '후방 연료 보정 희박 (뱅크1)', '촉매 후방 산소센서 기준 보정이 희박 방향 한계에 도달', ['후방 산소센서 불량·오염', '촉매 후단 배기 누설', '전방 연료 보정 문제(희박)', '촉매 열화'], ['S:전/후방 산소센서 파형 비교, 후방 보정값 확인', 'V:촉매 전·후 배기 누설 점검'], ['fuel_trim', 'o2', 'exh', 'cat']);
+        dtc('P2097', 'Post Catalyst Fuel Trim System Too Rich (Bank 1)', '후방 연료 보정 농후 (뱅크1)', '촉매 후방 산소센서 기준 보정이 농후 방향 한계에 도달', ['후방 산소센서 불량·오염', '전방 연료 보정 문제(농후)', '촉매 열화'], ['S:전/후방 산소센서 파형 비교, 후방 보정값 확인', 'V:오일/연료 오염으로 인한 센서 피독 여부 확인'], ['fuel_trim', 'o2', 'cat']);
+        dtc('P2098', 'Post Catalyst Fuel Trim System Too Lean (Bank 2)', '후방 연료 보정 희박 (뱅크2)', '촉매 후방 산소센서 기준 보정이 희박 방향 한계에 도달', ['후방 산소센서 불량·오염', '촉매 후단 배기 누설', '전방 연료 보정 문제(희박)', '촉매 열화'], ['S:뱅크2 전/후방 산소센서 파형 비교', 'V:촉매 전·후 배기 누설 점검'], ['fuel_trim', 'o2', 'exh', 'cat']);
+        dtc('P2099', 'Post Catalyst Fuel Trim System Too Rich (Bank 2)', '후방 연료 보정 농후 (뱅크2)', '촉매 후방 산소센서 기준 보정이 농후 방향 한계에 도달', ['후방 산소센서 불량·오염', '전방 연료 보정 문제(농후)', '촉매 열화'], ['S:뱅크2 전/후방 산소센서 파형 비교', 'V:오일/연료 오염으로 인한 센서 피독 여부 확인'], ['fuel_trim', 'o2', 'cat']);
+        [['P2187', 'System Too Lean at Idle (Bank 1)', '공회전 희박 (뱅크1)', true], ['P2188', 'System Too Rich at Idle (Bank 1)', '공회전 농후 (뱅크1)', false],
+         ['P2189', 'System Too Lean at Idle (Bank 2)', '공회전 희박 (뱅크2)', true], ['P2190', 'System Too Rich at Idle (Bank 2)', '공회전 농후 (뱅크2)', false]].forEach(([c, en, ko, isLean]) =>
+            dtc(c, en, ko, '공회전 영역에서 연료 보정이 한계에 도달해 공연비가 ' + (isLean ? '희박' : '농후') + '함',
+                isLean ? ['공회전 시 두드러지는 흡기 누설(진공 호스·가스켓·PCV)', 'MAF/MAP 오차', '인젝터 막힘', '연료 압력 저하'] : ['인젝터 누유', '퍼지 밸브 고착', '연료 압력 과다', 'MAF 오차'],
+                isLean ? CK_LEAN : CK_RICH, isLean ? ['fuel_trim', 'vac', 'maf', 'inj', 'fuelp'] : ['fuel_trim', 'inj', 'evap', 'fuelp', 'maf']));
+
+        // ---------- 산소센서 ----------
+        [[130, 'Bank 1 Sensor 1', '뱅크1 센서1(전방)', ['o2f']], [136, 'Bank 1 Sensor 2', '뱅크1 센서2(후방)', ['o2r']],
+         [150, 'Bank 2 Sensor 1', '뱅크2 센서1(전방)', ['o2f']], [156, 'Bank 2 Sensor 2', '뱅크2 센서2(후방)', ['o2r']]].forEach(([base, en, ko]) => {
+            const v = [
+                ['O2 Sensor Circuit', '산소센서 회로 이상', '산소센서 신호 회로의 단선/단락 또는 신호 불능을 감지', ['센서 커넥터·배선 불량', '산소센서 불량', '배기 누설(센서 주변)'], ['o2', 'harn']],
+                ['O2 Sensor Circuit Low Voltage', '산소센서 전압 낮음', '센서 출력 전압이 장시간 낮게(희박 방향) 고정됨', ['희박 상태 지속(흡기 누설·연료 부족)', '산소센서 불량·오염', '신호선 접지 단락', '배기 누설'], ['o2', 'vac', 'fuelp', 'exh']],
+                ['O2 Sensor Circuit High Voltage', '산소센서 전압 높음', '센서 출력 전압이 장시간 높게(농후 방향) 고정됨', ['농후 상태 지속(인젝터 누유·퍼지 밸브 고착)', '산소센서 불량·오염', '신호선 전원 단락'], ['o2', 'inj', 'evap']],
+                ['O2 Sensor Circuit Slow Response', '산소센서 응답 지연', '센서의 희박↔농후 전환 속도가 기준보다 느림 (센서 열화)', ['산소센서 노화·피독(실리콘·납·오일 소모·냉각수)', '센서 앞단 배기 누설', '연료/공기 보정 이상'], ['o2', 'exh']],
+                ['O2 Sensor Circuit No Activity Detected', '산소센서 활동 없음', '센서 신호가 변동 없이 고정되어 활동이 감지되지 않음', ['산소센서 불량·단선', '히터 불량으로 미활성', '커넥터/배선 불량', '심한 배기 누설'], ['o2', 'harn', 'exh']],
+                ['O2 Sensor Heater Circuit', '산소센서 히터 회로 이상', '산소센서 히터의 단선/단락 또는 저항 이상을 감지', ['히터 코일 단선·저항 이상(센서 불량)', '히터 퓨즈/릴레이·전원 불량', '배선·커넥터 불량', 'ECU 드라이버 불량'], ['o2', 'harn', 'gnd']]
+            ];
+            v.forEach((e, i) => dtc(pc(base + i), e[0] + ' (' + en + ')', e[1] + ' (' + ko + ')', e[2], e[3],
+                [i === 5 ? 'M:히터 저항(제조사 사양) 및 히터 전원/구동 신호 확인' : 'S:산소센서 전압 파형(협대역 약 0.1~0.9V 스위칭) 또는 광대역 람다/AFR 값 확인',
+                 'M:센서 커넥터 전원·접지·신호 확인', 'V:배기 누설·센서 오염(실리콘/오일/냉각수) 점검'], e[4]));
+        });
+        [[30, 'Bank 1 Sensor 1', '뱅크1 센서1'], [36, 'Bank 1 Sensor 2', '뱅크1 센서2']].forEach(([base, en, ko]) => {
+            [['HO2S Heater Control Circuit', '산소센서 히터 제어 회로 이상', '히터 제어 회로의 단선/단락을 감지'], ['HO2S Heater Control Circuit Low', '산소센서 히터 제어 회로 낮음', '히터 제어 회로 전압이 낮음 (접지 단락 등)'], ['HO2S Heater Control Circuit High', '산소센서 히터 제어 회로 높음', '히터 제어 회로 전압이 높음 (전원 단락·개방 등)']].forEach((e, i) =>
+                dtc(pc(base + i), e[0] + ' (' + en + ')', e[1] + ' (' + ko + ')', e[2], ['히터 코일 단선·저항 이상(센서 불량)', '히터 전원 퓨즈/릴레이 불량', '배선·커넥터 단락/단선', 'ECU 드라이버 불량'],
+                    ['M:히터 저항(제조사 사양)·전원/구동 신호 확인', 'S:히터 듀티/활성 상태 확인', 'V:커넥터·배선 상태 확인'], ['o2', 'harn', 'gnd']));
+        });
+        [['P2195', 'O2 Sensor Signal Stuck Lean (Bank 1 Sensor 1)', '산소센서 신호 희박 고착 (뱅크1 센서1)', true], ['P2196', 'O2 Sensor Signal Stuck Rich (Bank 1 Sensor 1)', '산소센서 신호 농후 고착 (뱅크1 센서1)', false],
+         ['P2270', 'O2 Sensor Signal Stuck Lean (Bank 1 Sensor 2)', '산소센서 신호 희박 고착 (뱅크1 센서2)', true], ['P2271', 'O2 Sensor Signal Stuck Rich (Bank 1 Sensor 2)', '산소센서 신호 농후 고착 (뱅크1 센서2)', false],
+         ].forEach(([c, en, ko, isLean]) =>
+            dtc(c, en, ko, '산소센서 신호가 ' + (isLean ? '희박' : '농후') + ' 쪽에 고정되어 정상적인 스위칭/응답을 하지 않음',
+                isLean ? ['산소센서 불량·피독', '흡기/배기 누설 → 실제 희박', '연료 압력 저하'] : ['산소센서 불량·피독', '인젝터 누유/퍼지 밸브 고착 → 실제 농후', '연료 압력 과다'],
+                ['S:센서 전압/람다 값이 한쪽에 고정되었는지, 연료 보정 반응 확인 (강제 가속·감속 시 응답)', 'V:배기 누설·센서 오염 점검'], isLean ? ['o2', 'vac', 'exh'] : ['o2', 'inj', 'evap']));
+
+        // ---------- 촉매 ----------
+        const CK_CAT = [
+            'S:전/후방 산소센서 파형 비교 - 후방 센서가 전방처럼 크게 스위칭하면 촉매 효율 저하',
+            'S:실화(P03xx)·연료 보정(P017x) 코드를 먼저 해결 (촉매 손상의 원인일 수 있음)',
+            'V:촉매 전·후 배기 누설 점검, 촉매 입·출구 온도차(적외선 온도계) 확인, 필요 시 배압 측정'
+        ];
+        [['P0420', 'Catalyst System Efficiency Below Threshold (Bank 1)', '촉매 효율 기준 미달 (뱅크1)'], ['P0430', 'Catalyst System Efficiency Below Threshold (Bank 2)', '촉매 효율 기준 미달 (뱅크2)']].forEach(([c, en, ko]) =>
+            dtc(c, en, ko, '촉매 전·후방 산소센서 신호 비교로 산화 효율이 기준 이하로 판단됨',
+                ['촉매 열화 (노후·실화·오일 소모·냉각수 유입으로 인한 오염)', '후방 산소센서 불량/응답 지연', '촉매 전·후 배기 누설', '선행 실화·연료 보정 문제로 인한 촉매 손상', '전방 산소센서 열화'],
+                CK_CAT, ['cat', 'o2', 'exh', 'ign']));
+        [['P0421', 'Warm Up Catalyst Efficiency Below Threshold (Bank 1)', '워밍업 촉매 효율 기준 미달 (뱅크1)'], ['P0431', 'Warm Up Catalyst Efficiency Below Threshold (Bank 2)', '워밍업 촉매 효율 기준 미달 (뱅크2)']].forEach(([c, en, ko]) =>
+            dtc(c, en, ko, '냉간 시동 후 촉매 예열 구간의 산화 효율이 기준 이하로 판단됨',
+                ['촉매 열화', '후방 산소센서 불량', '배기 누설', '냉간 시 연료/점화 시기 이상'], CK_CAT, ['cat', 'o2', 'exh']));
+
+        // ---------- EVAP ----------
+        const CK_EVAP = [
+            'S:EVAP 모니터 상태·FTP(연료탱크 압력) 값 확인, 퍼지/벤트 밸브 액티브 테스트 수행',
+            'M:퍼지/벤트 밸브 코일 저항(제조사 사양)·전원·구동 신호 확인',
+            'V:연료캡 체결/패킹, 필러넥·증발가스 호스·캐니스터 균열 점검 (스모크 테스트 권장)'
+        ];
+        const evapLeak = (c, en, ko, trig) => dtc(c, en, ko, trig, ['연료캡 미체결·패킹 불량', 'EVAP 호스·커넥터 균열/이탈', '퍼지 밸브 또는 벤트 밸브 고착/누설', '캐니스터·연료탱크·필러넥 균열/부식', 'FTP 센서 불량'], CK_EVAP, ['evap']);
+        dtc('P0440', 'Evaporative Emission System', 'EVAP 시스템 이상', 'EVAP 계통에서 일반적인 시스템 이상이 감지됨', ['연료캡 불량', 'EVAP 호스·밸브 불량', '캐니스터 이상'], CK_EVAP, ['evap']);
+        dtc('P0441', 'Evaporative Emission System Incorrect Purge Flow', 'EVAP 퍼지 유량 이상', '퍼지 밸브 작동 시 예상되는 유량/압력 변화가 나타나지 않음', ['퍼지 밸브 고착(닫힘/열림)', '퍼지 호스 막힘·이탈', '벤트 밸브 불량', 'FTP 센서 불량'], CK_EVAP, ['evap']);
+        evapLeak('P0442', 'Evaporative Emission System Leak Detected (Small Leak)', 'EVAP 누설 감지 (소형 누설)', 'EVAP 계통 누설 시험에서 작은 누설(약 0.040인치 상당)이 감지됨');
+        dtc('P0443', 'Evaporative Emission System Purge Control Valve Circuit', 'EVAP 퍼지 밸브 회로 이상', '퍼지 컨트롤 밸브 구동 회로의 단선/단락을 감지', ['퍼지 밸브 코일 불량', '커넥터·배선 불량', 'ECU 드라이버 불량'], CK_EVAP, ['evap', 'harn']);
+        dtc('P0444', 'Evaporative Emission System Purge Control Valve Circuit Open', 'EVAP 퍼지 밸브 회로 개방', '퍼지 밸브 회로가 개방(단선) 상태', ['퍼지 밸브 코일 단선', '커넥터·배선 단선', '전원 퓨즈 불량'], CK_EVAP, ['evap', 'harn']);
+        dtc('P0445', 'Evaporative Emission System Purge Control Valve Circuit Shorted', 'EVAP 퍼지 밸브 회로 단락', '퍼지 밸브 회로가 단락됨', ['퍼지 밸브 코일 단락', '배선 접지/전원 단락', 'ECU 드라이버 불량'], CK_EVAP, ['evap', 'harn']);
+        dtc('P0446', 'Evaporative Emission System Vent Control Circuit', 'EVAP 벤트 컨트롤 회로 이상', '벤트(캐니스터 클로즈) 밸브 회로 이상을 감지', ['벤트 밸브 불량(고착/코일 불량)', '커넥터·배선 불량', '벤트 라인 막힘(이물·벌레집)'], CK_EVAP, ['evap', 'harn']);
+        dtc('P0447', 'Evaporative Emission System Vent Control Circuit Open', 'EVAP 벤트 컨트롤 회로 개방', '벤트 밸브 회로가 개방됨', ['벤트 밸브 코일 단선', '배선 단선'], CK_EVAP, ['evap', 'harn']);
+        dtc('P0448', 'Evaporative Emission System Vent Control Circuit Shorted', 'EVAP 벤트 컨트롤 회로 단락', '벤트 밸브 회로가 단락됨', ['벤트 밸브 코일 단락', '배선 단락'], CK_EVAP, ['evap', 'harn']);
+        dtc('P0449', 'Evaporative Emission System Vent Valve/Solenoid Circuit', 'EVAP 벤트 밸브/솔레노이드 회로 이상', '벤트 밸브/솔레노이드 회로 이상을 감지', ['벤트 솔레노이드 불량', '배선·커넥터 불량'], CK_EVAP, ['evap', 'harn']);
+        evapLeak('P0455', 'Evaporative Emission System Leak Detected (Large Leak)', 'EVAP 누설 감지 (대형 누설)', 'EVAP 계통에서 큰 누설이 감지됨 (연료캡 미체결 포함)');
+        evapLeak('P0456', 'Evaporative Emission System Leak Detected (Very Small Leak)', 'EVAP 누설 감지 (극소형 누설)', 'EVAP 계통 누설 시험에서 매우 작은 누설(약 0.020인치 상당)이 감지됨');
+        evapLeak('P0457', 'Evaporative Emission System Leak Detected (Fuel Cap Loose/Off)', 'EVAP 누설 감지 (연료캡 느슨함/없음)', '연료캡이 느슨하거나 빠진 것으로 판단되는 누설이 감지됨');
+
+        // ---------- EGR / 2차 공기 ----------
+        const CK_EGR = [
+            'S:EGR 밸브 지령 vs 실제 개도(또는 EGR 유량/MAP 변화) 비교, 강제 작동(액티브 테스트) 시 공회전 변화 확인',
+            'M:EGR 밸브 코일·위치센서 전원/접지/신호 확인',
+            'V:EGR 밸브·통로 카본 퇴적/고착 점검 및 청소'
+        ];
+        dtc('P0400', 'Exhaust Gas Recirculation Flow', 'EGR 유량 이상', 'EGR 유량이 기준과 맞지 않음', ['EGR 밸브 고착', 'EGR 통로·쿨러 막힘', 'EGR 센서/밸브 회로 불량'], CK_EGR, ['egr']);
+        dtc('P0401', 'Exhaust Gas Recirculation Flow Insufficient Detected', 'EGR 유량 부족', 'EGR 작동 시 기대한 흡기압 변화/배출 저감 효과가 부족함', ['EGR 통로 카본 막힘', 'EGR 밸브 고착(닫힘)', 'EGR 진공 계통/솔레노이드 불량', 'DPFE/EGR 압력센서 불량'], CK_EGR, ['egr']);
+        dtc('P0402', 'Exhaust Gas Recirculation Flow Excessive Detected', 'EGR 유량 과다', 'EGR이 과도하게 유입되는 상태 (특히 공회전/저부하)', ['EGR 밸브 고착(열림)', 'EGR 센서 오차', 'EGR 진공 제어 불량'], CK_EGR, ['egr']);
+        dtc('P0403', 'Exhaust Gas Recirculation Control Circuit', 'EGR 제어 회로 이상', 'EGR 밸브 구동 회로의 단선/단락을 감지', ['EGR 밸브 코일/모터 불량', '커넥터·배선 불량', 'ECU 드라이버 불량'], CK_EGR, ['egr', 'harn']);
+        dtc('P0404', 'Exhaust Gas Recirculation Control Circuit Range/Performance', 'EGR 제어 범위/성능 이상', 'EGR 밸브의 실제 위치가 지령과 일치하지 않음', ['EGR 밸브 고착·카본', '위치센서 불량', '배선 접촉 불량'], CK_EGR, ['egr', 'sens']);
+        dtc('P0405', 'Exhaust Gas Recirculation Sensor "A" Circuit Low', 'EGR 센서 A 회로 낮음', 'EGR 센서 A 신호 전압이 하한 이하', ['EGR 센서 불량', '신호선 접지 단락', '5V 기준 전압 이상'], CK_EGR, ['egr', 'ref5v', 'sens']);
+        dtc('P0406', 'Exhaust Gas Recirculation Sensor "A" Circuit High', 'EGR 센서 A 회로 높음', 'EGR 센서 A 신호 전압이 상한 초과', ['EGR 센서 불량', '신호선 전원 단락', '센서 접지 개방'], CK_EGR, ['egr', 'ref5v', 'sens']);
+        dtc('P0410', 'Secondary Air Injection System', '2차 공기 분사 시스템 이상', '2차 공기 분사 계통에서 이상이 감지됨 (냉간 시동 후 촉매 예열용)', ['2차 공기 펌프 불량', '체크 밸브/스위칭 밸브 고착', '호스 누설·막힘'], ['S:2차 공기 펌프 작동 지령 시 산소센서 반응 확인', 'M:펌프·밸브 전원·구동 신호 확인', 'V:호스·체크 밸브 점검'], ['harn']);
+        dtc('P0411', 'Secondary Air Injection System Incorrect Flow Detected', '2차 공기 분사 유량 이상', '2차 공기 분사 시 기대한 산소센서 응답이 나타나지 않음', ['2차 공기 펌프 성능 저하', '체크 밸브 막힘/누설', '호스 이탈·균열'], ['S:2차 공기 작동 시 산소센서 희박 방향 반응 확인', 'V:호스/체크 밸브/펌프 점검'], []);
+
+        // ---------- 연료 / 인젝터 ----------
+        const CK_INJ = [
+            'M:인젝터 코일 저항(제조사 사양), 전원·구동 신호(노이드 라이트/스코프) 확인',
+            'S:인젝터 액티브 테스트·기통별 실화 카운터 확인',
+            'V:커넥터·배선 상태 확인'
+        ];
+        dtc('P0200', 'Injector Circuit/Open', '인젝터 회로 이상/개방', '인젝터 구동 회로의 단선/단락을 감지 (기통 미특정)', ['인젝터 코일 불량', '인젝터 전원 퓨즈/릴레이 불량', '커넥터·배선 불량', 'ECU 드라이버 불량'], CK_INJ, ['inj', 'harn', 'gnd']);
+        for (let n = 1; n <= 8; n++) {
+            dtc(pc(200 + n), 'Injector Circuit/Open - Cylinder ' + n, n + '번 기통 인젝터 회로 이상/개방', n + '번 기통 인젝터 구동 회로의 단선/단락을 감지',
+                [n + '번 인젝터 코일 단선/단락', '커넥터·배선 불량', 'ECU 드라이버 불량'], CK_INJ, ['inj', 'harn']);
+        }
+        dtc('P0087', 'Fuel Rail/System Pressure - Too Low', '연료 레일/시스템 압력 너무 낮음', '목표 대비 실제 연료 레일 압력이 낮음',
+            ['연료 필터 막힘', '연료 펌프 성능 저하·전원 전압 강하', '연료 압력 레귤레이터/고압펌프(GDI) 불량', '연료 누설', '레일 압력센서 오차'],
+            ['S:목표 vs 실제 레일 압력(저압/고압) 비교', 'M:연료 압력 게이지·펌프 전원 전압 강하 측정', 'V:연료 필터·라인 누설 점검'], ['fuelp', 'batt']);
+        dtc('P0088', 'Fuel Rail/System Pressure - Too High', '연료 레일/시스템 압력 너무 높음', '목표 대비 실제 연료 레일 압력이 높음', ['압력 레귤레이터/압력 조절 밸브 고착', '리턴 라인 막힘', '레일 압력센서 오차'], ['S:목표 vs 실제 레일 압력 비교', 'M:연료 압력 게이지로 압력 측정, 리턴 라인 확인'], ['fuelp', 'sens']);
+        dtc('P0089', 'Fuel Pressure Regulator 1 Performance', '연료 압력 레귤레이터 1 성능 이상', '압력 조절 성능이 기준에 미달', ['레귤레이터 불량', '연료 펌프 성능 저하', '필터 막힘'], ['S:지령 vs 실제 압력 편차 확인', 'M:연료 압력 측정'], ['fuelp']);
+        dtc('P0090', 'Fuel Pressure Regulator 1 Control Circuit', '연료 압력 레귤레이터 1 제어 회로 이상', '레귤레이터 제어 회로 이상을 감지', ['레귤레이터/조절 밸브 코일 불량', '배선·커넥터 불량', 'ECU 드라이버 불량'], ['M:코일 저항·전원·구동 신호 확인'], ['fuelp', 'harn']);
+        dtc('P0230', 'Fuel Pump Primary Circuit', '연료 펌프 1차 회로 이상', '연료 펌프 릴레이/제어 회로 이상을 감지', ['연료 펌프 릴레이 불량', '연료 펌프 퓨즈·배선 불량', '인히비터/연료 차단 스위치 작동', '연료 펌프 모터 불량'], ['S:키 ON 시 펌프 프라이밍 작동 확인', 'M:릴레이 출력 전압·펌프 전원/접지 확인'], ['fuelp', 'harn', 'batt']);
+        dtc('P0231', 'Fuel Pump Secondary Circuit Low', '연료 펌프 2차 회로 낮음', '연료 펌프 2차 회로 전압이 낮음', ['펌프 배선 단락·접촉 불량', '펌프 모터 불량'], ['M:펌프 전원 전압 강하 측정'], ['fuelp', 'harn']);
+        dtc('P0232', 'Fuel Pump Secondary Circuit High', '연료 펌프 2차 회로 높음', '연료 펌프 2차 회로 전압이 높음', ['펌프 배선 전원 단락', '릴레이 고착'], ['M:릴레이/배선 점검'], ['fuelp', 'harn']);
+        dtc('P0627', 'Fuel Pump "A" Control Circuit/Open', '연료 펌프 A 제어 회로 이상/개방', 'FPCM/ECU의 연료 펌프 제어 회로 이상을 감지', ['연료 펌프 모듈(FPCM) 불량', '배선·커넥터 불량', '펌프 모터 불량'], ['S:펌프 듀티 지령 확인', 'M:펌프 전원·접지·제어 신호 확인'], ['fuelp', 'harn']);
+
+        // ---------- 과급 ----------
+        dtc('P0234', 'Turbocharger/Supercharger "A" Overboost Condition', '터보/과급기 A 과부스트', '실제 부스트가 목표를 초과', ['웨이스트게이트 고착(닫힘)', '부스트 컨트롤 솔레노이드 불량', '부스트 센서 오차', '진공 호스 이탈'], ['S:목표 vs 실제 부스트 비교', 'M:솔레노이드 저항·구동 확인', 'V:웨이스트게이트 액추에이터 작동 확인'], ['turbo', 'sens'], { t: 1 });
+        dtc('P0299', 'Turbocharger/Supercharger "A" Underboost', '터보/과급기 A 부스트 부족', '실제 부스트가 목표보다 낮음', ['인터쿨러 호스 이탈·균열(부스트 누설)', '웨이스트게이트 고착(열림)·액추에이터 불량', '부스트 컨트롤 솔레노이드·진공 호스 불량', '터보 성능 저하/배기 누설', '흡기 막힘(에어필터)'], ['S:가속 시 목표 vs 실제 부스트, MAF·MAP 비교', 'V:부스트 누설 시험(가압), 호스/클램프·인터쿨러 점검', 'M:솔레노이드 구동 확인'], ['turbo', 'vac', 'maf'], { t: 1 });
+        dtc('P0243', 'Turbocharger/Supercharger Wastegate Solenoid "A"', '웨이스트게이트 솔레노이드 A 이상', '웨이스트게이트 컨트롤 솔레노이드 회로 이상을 감지', ['솔레노이드 불량', '배선·커넥터 불량', 'ECU 드라이버 불량'], ['M:솔레노이드 저항·전원·구동 신호 확인'], ['turbo', 'harn'], { t: 1 });
+        dtc('P0245', 'Turbocharger/Supercharger Wastegate Solenoid "A" Low', '웨이스트게이트 솔레노이드 A 낮음', '웨이스트게이트 솔레노이드 회로 전압 낮음', ['솔레노이드 불량·배선 단락'], ['M:솔레노이드 저항·배선 확인'], ['turbo', 'harn'], { t: 1 });
+        dtc('P0246', 'Turbocharger/Supercharger Wastegate Solenoid "A" High', '웨이스트게이트 솔레노이드 A 높음', '웨이스트게이트 솔레노이드 회로 전압 높음', ['솔레노이드 불량·배선 단선/전원 단락'], ['M:솔레노이드 저항·배선 확인'], ['turbo', 'harn'], { t: 1 });
+        dtc('P2263', 'Turbo/Supercharger Boost System Performance', '터보/과급 시스템 성능 이상', '부스트 시스템의 성능이 기준에 미달', ['VGT 액추에이터 고착(디젤)', '부스트 누설', '배기 압력 이상', '흡기 시스템 막힘'], ['S:목표 vs 실제 부스트·VGT 위치 확인', 'V:부스트 누설·배기 누설 점검'], ['turbo'], { t: 1 });
+
+        // ---------- 전자 스로틀(ETC) / 페달 ----------
+        const CK_ETC = [
+            'S:스로틀 지령 개도 vs 실제 개도, 가속 페달 센서(APP) 1/2 일치 여부 확인',
+            'M:스로틀 모터 저항(제조사 사양)·전원/구동 신호, 센서 5V·접지 확인',
+            'V:스로틀 플레이트 카본 고착 점검 및 청소 후 스로틀 학습(Throttle Relearn) 수행'
+        ];
+        dtc('P2100', 'Throttle Actuator Control Motor Circuit/Open', '스로틀 액추에이터 모터 회로 이상/개방', 'ECU가 전자 스로틀 모터 구동 회로의 단선/단락을 감지', ['스로틀바디(ETC 모터) 불량', '모터 배선·커넥터 단선', 'ECU 구동 드라이버 불량', '배터리/전원 전압 불량'], CK_ETC, ['throttle_body', 'harn', 'batt']);
+        dtc('P2101', 'Throttle Actuator Control Motor Circuit Range/Performance', '스로틀 액추에이터 모터 범위/성능 이상', '목표 개도를 모터가 따라가지 못하는 성능 이상', ['스로틀 플레이트 카본 고착·리턴 스프링 불량', '스로틀바디 모터 마모', '전원 전압 강하'], CK_ETC, ['throttle_body', 'batt']);
+        dtc('P2102', 'Throttle Actuator Control Motor Circuit Low', '스로틀 액추에이터 모터 회로 낮음', '모터 구동 회로 전압이 낮음 (접지 단락 등)', ['모터 배선 접지 단락', '스로틀바디 모터 불량', 'ECU 드라이버 불량'], CK_ETC, ['throttle_body', 'harn']);
+        dtc('P2103', 'Throttle Actuator Control Motor Circuit High', '스로틀 액추에이터 모터 회로 높음', '모터 구동 회로 전압이 높음 (전원 단락 등)', ['모터 배선 전원 단락', '스로틀바디 모터 불량', 'ECU 드라이버 불량'], CK_ETC, ['throttle_body', 'harn']);
+        dtc('P2106', 'Throttle Actuator Control System - Forced Limited Power', '전자 스로틀 시스템 출력 제한', '스로틀 시스템 이상으로 출력이 제한됨 (림프 모드)', ['스로틀바디 모터/센서 불량', 'APP 센서 불량', '배선·커넥터 불량', 'ECU 이상'], CK_ETC, ['throttle_body', 'harn']);
+        dtc('P2111', 'Throttle Actuator Control System - Stuck Open', '전자 스로틀 시스템 열림 고착', '스로틀이 열린 상태에서 고정되어 닫히지 않음', ['스로틀 플레이트 고착/이물', '리턴 스프링 파손', '스로틀바디 기어 파손'], CK_ETC, ['throttle_body']);
+        dtc('P2112', 'Throttle Actuator Control System - Stuck Closed', '전자 스로틀 시스템 닫힘 고착', '스로틀이 닫힌 상태에서 고정되어 열리지 않음', ['스로틀 플레이트 카본 고착', '스로틀바디 모터/기어 불량', '동결(겨울철)'], CK_ETC, ['throttle_body']);
+        dtc('P2119', 'Throttle Actuator Control Throttle Body Range/Performance', '스로틀바디 범위/성능 이상', '스로틀 폐쇄 위치 학습값이 허용 범위를 벗어남', ['스로틀바디 카본 퇴적', '스로틀 학습값 소실(배터리 분리 후)', '스로틀 위치센서 불량'], CK_ETC, ['throttle_body']);
+        dtc('P2122', 'Throttle/Pedal Position Sensor/Switch "D" Circuit Low', '가속페달 위치센서 D 회로 낮음', '페달 센서(APP 1) 신호 전압이 하한 이하', ['APP 센서 불량', '신호선 접지 단락·전원 개방', '5V 기준전압 이상'], CK_ETC, ['throttle_body', 'ref_5v', 'wiring']);
+        dtc('P2123', 'Throttle/Pedal Position Sensor/Switch "D" Circuit High', '가속페달 위치센서 D 회로 높음', '페달 센서(APP 1) 신호 전압이 상한 초과', ['APP 센서 불량', '신호선 전원 단락·접지 개방', '센서 접지 불량'], CK_ETC, ['throttle_body', 'ref_5v', 'wiring']);
+        dtc('P2127', 'Throttle/Pedal Position Sensor/Switch "E" Circuit Low', '가속페달 위치센서 E 회로 낮음', '페달 센서(APP 2) 신호 전압이 하한 이하', ['APP 센서 불량', '신호선 접지 단락·전원 개방', '5V 기준전압 이상'], CK_ETC, ['throttle_body', 'ref_5v', 'wiring']);
+        dtc('P2128', 'Throttle/Pedal Position Sensor/Switch "E" Circuit High', '가속페달 위치센서 E 회로 높음', '페달 센서(APP 2) 신호 전압이 상한 초과', ['APP 센서 불량', '신호선 전원 단락·접지 개방', '센서 접지 불량'], CK_ETC, ['throttle_body', 'ref_5v', 'wiring']);
+        dtc('P2135', 'Throttle/Pedal Position Sensor/Switch "A"/"B" Voltage Correlation', '스로틀 위치센서 A/B 전압 상관 불일치', '스로틀 센서 A와 B의 신호가 서로 맞지 않음', ['스로틀바디(센서 내장) 불량', '센서 배선·커넥터 접촉 불량', '5V 기준전압 이상'], CK_ETC, ['throttle_body', 'ref_5v', 'wiring']);
+        dtc('P2138', 'Throttle/Pedal Position Sensor/Switch "D"/"E" Voltage Correlation', '가속페달 위치센서 D/E 전압 상관 불일치', '페달 센서 1과 2의 신호가 서로 맞지 않음', ['가속 페달 어셈블리(센서 내장) 불량', '센서 배선·커넥터 불량', '5V 기준전압 이상'], CK_ETC, ['throttle_body', 'ref_5v', 'wiring']);
+        dtc('P0125', 'Insufficient Coolant Temperature for Closed Loop Fuel Control', '폐루프 연료제어 진입에 냉각수온 부족', '냉각수온이 폐루프 진입 기준 온도에 도달하지 못함', ['서모스탯 열림 고착', 'ECT 센서 오차·불량', '냉각수 부족/에어'], ['S:워밍업 시 ECT 상승 곡선 확인 (정상: 수 분 내 80℃ 부근)', 'V:라디에이터 상부 호스 온도 변화 확인'], ['cooling']);
+        dtc('P0126', 'Insufficient Coolant Temperature for Stable Operation', '안정 운전에 냉각수온 부족', '주행 중에도 냉각수온이 안정 운전 온도에 도달하지 못함', ['서모스탯 열림 고착', 'ECT 센서 불량', '냉각팬 상시 작동'], ['S:ECT 온도 상승 곡선과 적외선 온도계 실측 비교', 'V:서모스탯/냉각수 레벨 점검'], ['cooling']);
+
+        // ---------- 공회전 / 전원 / 보조 입력 ----------
+        dtc('P0505', 'Idle Control System Malfunction', '공회전 제어 시스템 이상', '목표 공회전 회전수와 실제 회전수가 장시간 불일치', ['스로틀바디/ISC 밸브 카본 막힘', '흡기 누설', 'ECU 학습값 이상'], ['S:목표 vs 실제 공회전 RPM, 스로틀 개도·MAF 확인', 'V:스로틀바디 청소 후 공회전 학습, 연기 테스트로 누설 점검'], ['throttle_body', 'air_leak']);
+        dtc('P0506', 'Idle Control System RPM Lower Than Expected', '공회전 회전수 목표보다 낮음', '공회전 회전수가 목표보다 낮은 상태가 지속', ['스로틀바디 카본 퇴적·ISC 불량', '흡기 막힘(에어필터)', '연료/점화 문제로 인한 출력 부족', 'A/C 컴프레서 등 부하 이상'], ['S:목표 vs 실제 RPM·스로틀/ISC 지령 확인', 'V:스로틀바디·에어필터 점검'], ['throttle_body', 'misfire']);
+        dtc('P0507', 'Idle Control System RPM Higher Than Expected', '공회전 회전수 목표보다 높음', '공회전 회전수가 목표보다 높은 상태가 지속', ['스로틀바디 후단 대량 진공 누설 (PCV·브레이크 부스터·매니폴드)', 'ISC 밸브/스로틀 고착', 'ECT/IAT 센서 오차', '스로틀 학습 미실시'], ['S:목표 vs 실제 RPM, LTFT (+)가 크면 흡기 누설 의심', 'V:연기 테스트, 스로틀바디 청소 후 학습'], ['air_leak', 'throttle_body']);
+        dtc('P0508', 'Idle Air Control System Circuit Low', '공회전 공기 제어 회로 낮음', 'ISC/IAC 밸브 회로 전압이 낮음', ['IAC 밸브 불량', '배선 접지 단락', 'ECU 드라이버 불량'], ['M:IAC 코일 저항·구동 신호 확인'], ['throttle_body', 'wiring']);
+        dtc('P0509', 'Idle Air Control System Circuit High', '공회전 공기 제어 회로 높음', 'ISC/IAC 밸브 회로 전압이 높음', ['IAC 밸브 불량', '배선 전원 단락/단선', 'ECU 드라이버 불량'], ['M:IAC 코일 저항·구동 신호 확인'], ['throttle_body', 'wiring']);
+        dtc('P0512', 'Starter Request Circuit', '스타터 요청 회로 이상', 'ECU가 스타터 요청(크랭킹 신호) 회로 이상을 감지', ['시동 스위치/PNP 스위치 불량', '스타터 릴레이·배선 불량', '이모빌라이저 연동 문제'], ['S:시동 요청 입력 신호 확인', 'M:스타터 신호 라인 전압 확인'], ['wiring']);
+        dtc('P0513', 'Incorrect Immobilizer Key', '이모빌라이저 키 불일치', '스마트키/이모빌라이저 키가 등록 정보와 일치하지 않음', ['키 미등록/전자 칩 불량', '이모빌라이저 안테나·모듈 불량', 'ECU 통신 문제'], ['S:이모빌라이저 키 인식 상태 확인', 'V:예비 키로 시동 시험, 키 재등록'], ['wiring']);
+        dtc('P0524', 'Engine Oil Pressure Too Low', '엔진 오일압력 너무 낮음', '오일압력 센서/스위치로 측정한 오일압이 기준 이하', ['엔진 오일 부족·점도 불일치', '오일 필터 막힘·오일펌프 성능 저하', '엔진 내부 마모(베어링)', '오일압 센서 불량'], ['V:오일 레벨/상태 확인', 'M:기계식 오일압 게이지로 실제 압력 측정 후 센서와 교차 확인'], ['engine_oil', 'engine_mechanical']);
+        dtc('P0560', 'System Voltage', '시스템 전압 이상', 'ECU 입력 시스템 전압이 정상 범위를 벗어남', ['배터리 약화·단자 부식', '발전기/레귤레이터 불량', '접지 불량·전압 강하'], ['S:엔진 시동 전/후 배터리 전압 확인 (충전 전압 약 13.5~14.8V)', 'M:발전기 출력·단자 전압 강하 측정'], ['battery_voltage', 'ground_power']);
+        dtc('P0561', 'System Voltage Unstable', '시스템 전압 불안정', '시스템 전압이 불규칙하게 변동', ['발전기 브러시/레귤레이터 불량', '배터리 단자 접촉 불량', '구동 벨트 슬립'], ['M:부하 변화 시 충전 전압 안정성·리플 확인', 'V:벨트/단자 점검'], ['battery_voltage', 'ground_power']);
+        dtc('P0562', 'System Voltage Low', '시스템 전압 낮음', '시스템 전압이 하한 이하', ['배터리 방전·노후', '발전기 출력 부족', '단자 부식·접지 불량'], ['M:배터리 부하 시험·충전 전압 측정', 'V:단자·접지 포인트 점검'], ['battery_voltage', 'ground_power']);
+        dtc('P0563', 'System Voltage High', '시스템 전압 높음', '시스템 전압이 상한 초과', ['발전기 레귤레이터 불량(과충전)', '배터리 단자 불량으로 인한 전압 상승', '충전 제어 신호 이상'], ['M:충전 전압 측정 (15V 이상 지속 시 레귤레이터 불량 의심)'], ['battery_voltage']);
+        dtc('P0571', 'Brake Switch "A" Circuit', '브레이크 스위치 A 회로 이상', '브레이크 램프 스위치 회로 이상 (크루즈/시프트락 영향)', ['브레이크 스위치 위치 조정 불량·불량', '배선·커넥터 불량', '퓨즈 불량'], ['S:브레이크 페달 조작 시 스위치 상태 변화 확인', 'M:스위치 전원 및 신호 전압 확인'], ['wiring']);
+        dtc('P0572', 'Brake Switch "A" Circuit Low', '브레이크 스위치 A 회로 낮음', '브레이크 스위치 신호가 낮게 고정됨', ['브레이크 스위치 불량', '배선 접지 단락', '퓨즈 불량'], ['S:페달 조작 시 상태 확인', 'M:스위치 전원·신호 확인'], ['wiring']);
+        dtc('P0573', 'Brake Switch "A" Circuit High', '브레이크 스위치 A 회로 높음', '브레이크 스위치 신호가 높게 고정됨', ['브레이크 스위치 고착', '배선 전원 단락', '페달 스토퍼 조정 불량'], ['S:페달 미조작 시에도 ON 상태인지 확인', 'V:스위치 위치·스토퍼 점검'], ['wiring']);
+        dtc('P0503', 'Vehicle Speed Sensor "A" Intermittent/Erratic/High', '차속 센서 A 간헐/불규칙/높음', '차속 신호가 간헐적으로 끊기거나 비정상적으로 높게 입력됨', ['차속/휠 속도센서 불량·노이즈', '톤링 손상', '배선 간섭·접촉 불량'], ['S:주행 중 차속 신호 변동 확인', 'M:스코프로 센서 파형 확인'], ['speed_sensor', 'wiring']);
+        dtc('P0717', 'Input/Turbine Speed Sensor "A" Circuit No Signal', '입력(터빈) 속도센서 A 신호 없음', '주행 중 입력축 속도 신호가 입력되지 않음', ['입력 속도센서 불량·커넥터 접촉 불량', '배선 단선', '변속기 내부 기계 고장'], ['S:주행 중 입력 속도 신호 유무 확인', 'M:센서 저항·파형 확인'], ['speed_sensor', 'wiring']);
+        dtc('P0718', 'Input/Turbine Speed Sensor "A" Circuit Intermittent', '입력(터빈) 속도센서 A 간헐 이상', '입력축 속도 신호가 간헐적으로 끊김', ['입력 속도센서 불량', '배선 접촉 불량', '이물 부착'], ['S:신호 변동 확인', 'V:커넥터·배선 점검'], ['speed_sensor', 'wiring']);
+        dtc('P0722', 'Output Speed Sensor No Signal', '출력 속도센서 신호 없음', '주행 중 출력축 속도 신호가 입력되지 않음', ['출력 속도센서 불량', '배선 단선', '펄스 휠 손상'], ['S:출력 속도 vs 차속 비교', 'M:센서 파형 확인'], ['speed_sensor', 'wiring']);
+        dtc('P0723', 'Output Speed Sensor Intermittent', '출력 속도센서 간헐 이상', '출력축 속도 신호가 간헐적으로 끊김', ['출력 속도센서 불량', '배선 접촉 불량', '이물 부착'], ['S:신호 변동 확인', 'V:커넥터·배선 점검'], ['speed_sensor', 'wiring']);
+
+        // ---------- 냉각팬 / A-C ----------
+        [['P0480', 'Cooling Fan 1 Control Circuit', '냉각팬 1 제어 회로 이상'], ['P0481', 'Cooling Fan 2 Control Circuit', '냉각팬 2 제어 회로 이상']].forEach(([c, en, ko]) =>
+            dtc(c, en, ko, '냉각팬 제어 회로의 단선/단락 또는 구동 불량을 ECU가 감지', ['냉각팬 릴레이 불량', '팬 모터 불량', '퓨즈·배선·커넥터 불량', '팬 제어 모듈 불량'], ['S:팬 강제 구동(액티브 테스트)으로 작동 확인', 'M:릴레이/팬 전원·접지·제어 신호 확인'], ['cooling', 'wiring', 'ground_power']));
+        dtc('P0483', 'Cooling Fan Rationality Check', '냉각팬 합리성 점검 이상', '팬 작동 지령에 대한 실제 응답이 기준과 맞지 않음', ['팬 모터 성능 저하', '팬 제어 모듈/릴레이 불량', '배선 접촉 불량'], ['S:팬 듀티 지령 vs 실제 작동 확인', 'M:팬 전류·전원 확인'], ['cooling', 'wiring']);
+
+        // ---------- ECU / 모듈 ----------
+        const CK_ECU = ['S:다른 모듈 코드 동시 점등 여부·전원 전압 확인', 'M:ECU 전원·접지 단자 전압강하 측정 (배터리 상태 먼저 확인)', 'V:제조사 TSB/소프트웨어 업데이트 이력 확인, 코드 소거 후 재발 여부 확인'];
+        [['P0600', 'Serial Communication Link', 'ECU 직렬 통신 링크 이상', '모듈 간 직렬 통신에 이상이 감지됨'], ['P0601', 'Internal Control Module Memory Check Sum Error', 'ECU 내부 메모리 체크섬 오류', 'ECU 메모리 체크섬 검사에 실패'], ['P0602', 'Control Module Programming Error', 'ECU 프로그래밍 오류', 'ECU 프로그램/캘리브레이션 오류를 감지'],
+         ['P0603', 'Internal Control Module Keep Alive Memory (KAM) Error', 'ECU 내부 KAM 오류', '배터리 백업 메모리(KAM) 오류를 감지'], ['P0604', 'Internal Control Module Random Access Memory (RAM) Error', 'ECU 내부 RAM 오류', 'ECU RAM 자기진단 실패'], ['P0605', 'Internal Control Module Read Only Memory (ROM) Error', 'ECU 내부 ROM 오류', 'ECU ROM 자기진단 실패'],
+         ['P0606', 'Control Module Processor', 'ECU 프로세서 이상', 'ECU 내부 프로세서 자기진단 실패'], ['P0607', 'Control Module Performance', 'ECU 성능 이상', 'ECU 성능 모니터링에서 이상 감지']].forEach(([c, en, ko, trig]) =>
+            dtc(c, en, ko, trig, ['ECU(PCM) 내부 이상', '전원·접지 불량 / 배터리 전압 저하', '소프트웨어 문제 (TSB·리프로그래밍 대상)', '다른 모듈 통신 문제'], CK_ECU, ['ecu_software', 'battery_voltage', 'ground_power']));
+        dtc('P0610', 'Control Module Vehicle Options Error', 'ECU 차량 옵션 설정 오류', 'ECU의 차량 옵션/코딩 정보가 일치하지 않음', ['ECU 교체 후 코딩 미실시', '옵션 설정 데이터 손상', '소프트웨어 불일치'], ['S:ECU 코딩/옵션 설정값 확인', 'V:제조사 진단기로 옵션 재설정'], ['ecu_software']);
+        dtc('P0615', 'Starter Relay Circuit', '스타터 릴레이 회로 이상', '스타터 릴레이 제어 회로 이상을 감지', ['스타터 릴레이 불량', '배선·퓨즈 불량', 'ECU 드라이버 불량'], ['M:릴레이 코일 저항·전원·제어 신호 확인'], ['wiring', 'ecu_software']);
+        dtc('P0620', 'Generator Control Circuit', '발전기 제어 회로 이상', 'ECU의 발전기 제어 신호 회로 이상', ['발전기 레귤레이터/제어 신호 불량', '배선·커넥터 불량', 'ECU 이상'], ['S:발전기 제어 듀티·충전 전압 확인', 'M:제어 신호 라인 확인'], ['battery_voltage', 'wiring']);
+        dtc('P0630', 'VIN Not Programmed or Incompatible - ECM/PCM', 'VIN 미입력 또는 불일치 (ECM/PCM)', 'ECU에 VIN이 프로그래밍되지 않았거나 일치하지 않음', ['ECU 교체 후 VIN 미입력', '소프트웨어 오류'], ['S:ECU 저장 VIN과 차량 VIN 비교', 'V:제조사 진단기로 VIN 입력'], ['ecu_software']);
+        dtc('P0641', 'Sensor Reference Voltage "A" Circuit/Open', '센서 기준전압 A 회로 이상/개방', 'ECU가 센서에 공급하는 5V 기준전압 A 회로 이상을 감지', ['공통 5V 레퍼런스 라인 단락', '센서 중 하나의 내부 단락', 'ECU 내부 이상'], ['M:5V 기준전압 측정 후 센서를 하나씩 탈거하며 전압 복귀 확인', 'S:동시 점등된 센서 코드 확인'], ['ref_5v', 'wiring', 'ecu_software']);
+        dtc('P0651', 'Sensor Reference Voltage "B" Circuit/Open', '센서 기준전압 B 회로 이상/개방', 'ECU가 센서에 공급하는 5V 기준전압 B 회로 이상을 감지', ['공통 5V 레퍼런스 라인 단락', '센서 중 하나의 내부 단락', 'ECU 내부 이상'], ['M:5V 기준전압 측정 후 센서를 하나씩 탈거하며 전압 복귀 확인'], ['ref_5v', 'wiring', 'ecu_software']);
+        dtc('P0657', 'Actuator Supply Voltage "A" Circuit/Open', '액추에이터 공급전압 A 회로 이상/개방', '액추에이터 공급 전원 회로 이상', ['공급 전원 퓨즈/릴레이 불량', '배선 단선', 'ECU 내부 이상'], ['M:액추에이터 전원 전압 확인'], ['ground_power', 'wiring']);
+
+        // ---------- 글로우 플러그 (디젤) ----------
+        dtc('P0380', 'Glow Plug/Heater Circuit "A"', '글로우 플러그/히터 회로 A 이상', '글로우 플러그 제어 회로 이상을 감지', ['글로우 플러그 릴레이/모듈 불량', '글로우 플러그 단선', '배선·퓨즈 불량'], ['M:글로우 플러그 저항·전류 측정', 'S:글로우 플러그 작동 상태 확인'], ['wiring']);
+        dtc('P0381', 'Glow Plug/Heater Indicator Circuit', '글로우 플러그 표시등 회로 이상', '글로우 플러그 예열 표시등 회로 이상', ['계기판 표시등 회로 불량', '배선 불량', '글로우 모듈 불량'], ['S:예열 표시등 점등 확인'], ['wiring']);
+        dtc('P0670', 'Glow Plug Module Control Circuit', '글로우 플러그 모듈 제어 회로 이상', '글로우 플러그 제어 모듈 회로 이상', ['글로우 모듈 불량', '전원/접지 불량', '배선 불량'], ['M:모듈 전원·접지·제어 신호 확인'], ['wiring', 'ground_power']);
+        for (let n = 1; n <= 4; n++) {
+            dtc(pc(670 + n), 'Cylinder ' + n + ' Glow Plug Circuit', n + '번 기통 글로우 플러그 회로 이상', n + '번 기통 글로우 플러그의 저항/전류가 비정상',
+                [n + '번 글로우 플러그 단선·열화', '글로우 플러그 배선 불량', '글로우 모듈 불량'], ['M:' + n + '번 글로우 플러그 저항(제조사 사양) 및 전류 측정', 'V:플러그 단자·배선 점검'], ['wiring']);
+        }
+
+        // ---------- 변속기 ----------
+        const CK_TRANS = [
+            'S:변속 지령 기어 vs 실제 기어비(입력/출력 속도), 슬립 회전수, TCC 상태 확인',
+            'M:솔레노이드 코일 저항(제조사 사양)·전원·구동 신호, 커넥터 확인',
+            'V:ATF 양/색/냄새(탄 냄새) 확인, 필터·밸브바디 점검 (과도한 점검 전 TSB 확인)'
+        ];
+        dtc('P0700', 'Transmission Control System (MIL Request)', '변속기 제어 시스템 (MIL 요청)', 'TCM이 변속기 계통 고장을 감지하고 ECU에 MIL 점등을 요청', ['TCM에 저장된 변속기 고장 코드 존재', '변속기 솔레노이드/센서 이상', 'TCM-ECU 통신 문제'], ['S:TCM(변속기) 코드를 별도로 조회 (P07xx/P08xx/P09xx)', 'S:다른 변속기 코드 동시 점등 확인'], ['trans_solenoid', 'can_bus']);
+        dtc('P0701', 'Transmission Control System Range/Performance', '변속기 제어 시스템 범위/성능 이상', '변속기 제어 성능이 기대값에서 벗어남', ['ATF 양/상태 불량', '솔레노이드/밸브바디 성능 저하', 'TCM 이상'], CK_TRANS, ['atf', 'trans_solenoid']);
+        dtc('P0702', 'Transmission Control System Electrical', '변속기 제어 시스템 전기 회로 이상', '변속기 제어 회로의 전기적 이상을 감지', ['TCM 전원/접지 불량', '변속기 배선·커넥터 불량', 'TCM 불량'], CK_TRANS, ['wiring', 'ground_power', 'trans_solenoid']);
+        dtc('P0703', 'Brake Switch "B" Circuit', '브레이크 스위치 B 회로 이상', '브레이크 스위치 B(변속기 인터락용) 회로 이상', ['브레이크 스위치 불량·조정 불량', '배선 불량'], ['S:브레이크 페달 조작 시 스위치 상태 확인', 'M:스위치 전원·신호 확인'], ['wiring']);
+        for (let g = 1; g <= 5; g++) {
+            dtc(pc(730 + g), 'Gear ' + g + ' Incorrect Ratio', g + '단 기어비 불일치', g + '단에서 입력/출력 속도 비로 계산한 기어비가 기준과 맞지 않음 (클러치 슬립 의심)',
+                ['ATF 부족·오염·유압 저하', g + '단 관련 클러치/브레이크 마모·슬립', '솔레노이드/밸브바디 불량', '속도센서 오차'], CK_TRANS, ['atf', 'trans_solenoid', 'speed_sensor']);
+        }
+        dtc('P0730', 'Incorrect Gear Ratio', '기어비 불일치', '특정 단이 특정되지 않은 기어비 불일치를 감지', ['ATF 부족·오염', '클러치 슬립', '솔레노이드/밸브바디 불량', '속도센서 오차'], CK_TRANS, ['atf', 'trans_solenoid', 'speed_sensor']);
+        dtc('P0736', 'Reverse Incorrect Ratio', '후진 기어비 불일치', '후진에서 기어비가 기준과 맞지 않음', ['후진 클러치/브레이크 슬립', 'ATF 문제', '밸브바디 불량'], CK_TRANS, ['atf', 'trans_solenoid']);
+        const tccDefs = [['P0740', 'Torque Converter Clutch Circuit', '토크 컨버터 클러치(TCC) 회로 이상', 'TCC 솔레노이드 회로 이상을 감지'], ['P0741', 'Torque Converter Clutch Circuit Performance or Stuck Off', 'TCC 회로 성능 이상 / 해제 고착', 'TCC 로크업 지령에 비해 슬립이 계속됨'], ['P0742', 'Torque Converter Clutch Circuit Stuck On', 'TCC 회로 접합 고착', 'TCC가 접합 상태로 고정 (정차 시 시동 꺼짐 가능)'], ['P0743', 'Torque Converter Clutch Circuit Electrical', 'TCC 회로 전기 이상', 'TCC 솔레노이드 전기 회로 이상'], ['P0744', 'Torque Converter Clutch Circuit Intermittent', 'TCC 회로 간헐 이상', 'TCC 회로가 간헐적으로 이상']];
+        tccDefs.forEach(([c, en, ko, trig]) => dtc(c, en, ko, trig, ['TCC 솔레노이드 불량', 'ATF 상태 불량·유압 저하', '토크 컨버터 클러치 마모', '배선·커넥터 불량'], CK_TRANS, ['atf', 'trans_solenoid', 'wiring']));
+        const solDefs = [['Shift Solenoid "A"', '시프트 솔레노이드 A', 750], ['Shift Solenoid "B"', '시프트 솔레노이드 B', 755], ['Shift Solenoid "C"', '시프트 솔레노이드 C', 760],
+                         ['Pressure Control Solenoid "A"', '압력 제어 솔레노이드 A', 745]];
+        solDefs.forEach(([en, ko, base]) => {
+            [[' Malfunction', ' 이상', '솔레노이드 작동 이상을 TCM이 감지'], [' Performance or Stuck Off', ' 성능 이상 / 해제 고착', '솔레노이드가 OFF 상태로 고착되어 변속 지령대로 작동하지 않음'], [' Stuck On', ' 접합 고착', '솔레노이드가 ON 상태로 고착됨'],
+             [' Electrical', ' 전기 회로 이상', '솔레노이드 전기 회로 이상 (단선/단락)'], [' Intermittent', ' 간헐 이상', '솔레노이드 회로가 간헐적으로 이상']].forEach((d, i) =>
+                dtc(pc(base + i), en + d[0], ko + d[1], d[2], ['솔레노이드 불량(코일 단선·고착)', 'ATF 오염·유압 저하·필터 막힘', '밸브바디 마모/이물', '배선·커넥터 불량', 'TCM 불량'], CK_TRANS, ['trans_solenoid', 'atf', 'wiring']));
+        });
+        [['P0780', 'Shift Malfunction', '변속 이상'], ['P0781', '1-2 Shift', '1-2단 변속 이상'], ['P0782', '2-3 Shift', '2-3단 변속 이상'], ['P0783', '3-4 Shift', '3-4단 변속 이상'], ['P0784', '4-5 Shift', '4-5단 변속 이상'], ['P0785', 'Shift/Timing Solenoid', '시프트/타이밍 솔레노이드 이상']].forEach(([c, en, ko]) =>
+            dtc(c, en, ko, '해당 변속 구간에서 변속 시점/품질이 기준과 맞지 않음', ['ATF 부족·오염·유압 저하', '시프트 솔레노이드 고착/성능 저하', '클러치 마모', '속도센서 오차'], CK_TRANS, ['atf', 'trans_solenoid', 'speed_sensor']));
+
+        // ---------- 하이브리드 / 디젤 후처리 ----------
+        dtc('P0A0F', 'Engine Failed To Start', '엔진 시동 실패 (하이브리드)', '하이브리드 시스템이 엔진을 시동하지 못함', ['12V 보조 배터리 저하', '연료/점화 계통 문제', '고전압 시스템 또는 MG1 이상', '엔진 기계적 문제'], ['S:HV 시스템 코드·엔진 시동 요청/결과 확인', 'M:12V 배터리 전압 확인'], ['hv_system', 'battery_voltage']);
+        dtc('P0A80', 'Replace Hybrid Battery Pack', '하이브리드 배터리 팩 교체 요망', '고전압 배터리 셀 간 불균형/열화가 기준을 초과', ['고전압 배터리 셀 열화·불균형', '배터리 냉각 팬/덕트 막힘', '배터리 센서/ECU 이상'], ['S:셀 블록별 전압 편차(Delta V)·내부 저항 확인', 'V:배터리 냉각 팬/흡기구 막힘 점검 (고전압 안전 절차 준수)'], ['hv_system']);
+        dtc('P0A7F', 'Hybrid Battery Pack Deterioration', '하이브리드 배터리 팩 열화', '고전압 배터리 용량/내부 저항 열화를 감지', ['고전압 배터리 셀 노화', '냉각 불량', '충방전 제어 이상'], ['S:배터리 SOC 범위·셀 편차 확인', 'V:냉각 계통 점검 (고전압 안전 절차 준수)'], ['hv_system']);
+        dtc('P0AA6', 'Hybrid Battery Voltage System Isolation Fault', '하이브리드 배터리 전압 시스템 절연 이상', '고전압 계통 절연 저항이 기준 이하로 감지됨', ['고전압 케이블/컨버터/인버터 절연 열화', '냉각수·수분 유입', '컴프레서(전동) 절연 불량'], ['M:절연 저항 측정(고전압 전용 계측기, 안전 절차 필수)', 'V:고전압 커넥터·케이블 손상 점검'], ['hv_system']);
+        dtc('P0A93', 'Inverter Cooling System Performance', '인버터 냉각 시스템 성능 이상', '인버터 냉각 계통 성능이 기준에 미달', ['인버터 냉각수 펌프 불량', '냉각수 부족·에어', '라디에이터 막힘'], ['S:인버터 냉각수 온도·펌프 작동 확인', 'V:냉각수량·펌프 작동음 점검'], ['hv_system', 'cooling']);
+        dtc('P0A94', 'DC/DC Converter Performance', 'DC/DC 컨버터 성능 이상', 'DC/DC 컨버터의 출력/효율이 기준에 미달', ['DC/DC 컨버터 불량', '12V 배터리 저하', '고전압 계통 이상'], ['M:12V 충전 전압 확인', 'S:DC/DC 상태·출력 확인'], ['hv_system', 'battery_voltage']);
+        dtc('P2002', 'Diesel Particulate Filter Efficiency Below Threshold (Bank 1)', 'DPF 효율 기준 미달 (뱅크1)', 'DPF의 포집/재생 효율이 기준 이하로 판단됨', ['DPF 용융·균열·손상', '재생 불량으로 인한 막힘', 'DPF 차압/온도센서 이상'], ['S:DPF 차압·재생 이력·수트/애시 부하 확인', '[육안·기타] 필요 시 DPF 점검/세척 또는 교체'], ['aftertreatment']);
+        dtc('P242F', 'Diesel Particulate Filter Restriction - Ash Accumulation', 'DPF 막힘 - 애시 축적', 'DPF에 애시(회분)가 축적되어 차압이 높음', ['DPF 애시 포화(주행거리 누적)', '엔진 오일 소모 과다', '재생 불가능한 막힘'], ['S:DPF 애시 부하율·차압 확인', 'V:DPF 세척/교체 여부 판단'], ['aftertreatment']);
+        addSensorFamily(2452, 'Diesel Particulate Filter Pressure Sensor "A"', 'DPF 차압센서 A', {
+            causes: ['DPF 차압센서 불량', '센서 연결 호스 막힘/이탈'],
+            scan: 'S:엔진 정지 시 차압이 0에 가까운지, 가동 시 DPF 상태에 맞게 변하는지 확인', tags: ['aftertreatment', 'sens'], only: [0, 1, 2, 3] });
+        dtc('P20EE', 'SCR NOx Catalyst Efficiency Below Threshold (Bank 1)', 'SCR NOx 촉매 효율 기준 미달 (뱅크1)', 'SCR 촉매의 NOx 저감 효율이 기준 이하', ['요소수(DEF) 품질 불량·부족', 'SCR 촉매 열화', 'NOx 센서 이상·요소수 분사 불량'], ['S:요소수 품질/잔량, NOx 전·후단 값 확인', 'V:요소수 분사기·라인 막힘 점검'], ['aftertreatment', 'o2_sensor']);
+
+        // ---------- 통신 (U) ----------
+        const CK_CAN = ['S:모듈 스캔으로 응답하지 않는 모듈이 무엇인지 확인 (동시 점등 U코드 비교)', 'M:배터리 전압(12V 이상) 및 DLC CAN High-Low 간 저항 약 60Ω 확인 (CAN-H 약 2.5~3.5V, CAN-L 약 1.5~2.5V)', 'V:해당 모듈 전원 퓨즈/접지·커넥터 수분 침투 점검'];
+        const CAUSE_CAN = ['배터리 전압 저하/접지 불량 (저전압 시 통신 단절)', 'CAN 배선 단선·단락·종단 저항 이상', '해당 모듈 전원 퓨즈/접지 불량', '모듈 자체 불량 또는 소프트웨어'];
+        [['U0001', 'High Speed CAN Communication Bus', '고속 CAN 통신 버스 이상', '고속 CAN 버스 통신에 이상이 감지됨'], ['U0073', 'Control Module Communication Bus A Off', '모듈 통신 버스 A 오프', '통신 버스 A가 OFF(버스오프) 상태가 됨'], ['U0074', 'Control Module Communication Bus B Off', '모듈 통신 버스 B 오프', '통신 버스 B가 OFF(버스오프) 상태가 됨'],
+         ['U0100', 'Lost Communication With ECM/PCM "A"', 'ECM/PCM A와 통신 두절', '다른 모듈이 엔진 ECU와의 통신을 잃음'], ['U0101', 'Lost Communication with TCM', 'TCM과 통신 두절', '다른 모듈이 변속기 TCM과의 통신을 잃음'], ['U0121', 'Lost Communication With Anti-Lock Brake System (ABS) Control Module', 'ABS 모듈과 통신 두절', '다른 모듈이 ABS 모듈과의 통신을 잃음'],
+         ['U0140', 'Lost Communication With Body Control Module', 'BCM(바디 컨트롤 모듈)과 통신 두절', '다른 모듈이 BCM과의 통신을 잃음'], ['U0155', 'Lost Communication With Instrument Panel Cluster (IPC) Control Module', '계기판(IPC)과 통신 두절', '다른 모듈이 계기판과의 통신을 잃음'], ['U0164', 'Lost Communication With HVAC Control Module', '공조(HVAC) 모듈과 통신 두절', '다른 모듈이 공조 제어 모듈과의 통신을 잃음'],
+         ['U0401', 'Invalid Data Received From ECM/PCM "A"', 'ECM/PCM A로부터 유효하지 않은 데이터 수신', '다른 모듈이 ECU로부터 비정상 데이터를 수신'], ['U0402', 'Invalid Data Received From TCM', 'TCM으로부터 유효하지 않은 데이터 수신', '다른 모듈이 TCM으로부터 비정상 데이터를 수신'], ['U0415', 'Invalid Data Received From Anti-Lock Brake System Control Module', 'ABS 모듈로부터 유효하지 않은 데이터 수신', '다른 모듈이 ABS 모듈로부터 비정상 데이터를 수신']].forEach(([c, en, ko, trig]) =>
+            dtc(c, en, ko, trig, CAUSE_CAN, CK_CAN, ['can_bus', 'battery_voltage', 'ground_power', 'wiring']));
+
+
+        // 동일 원인 태그를 공유하는 코드를 연관 코드로 자동 산출 (배선·접지·ECU처럼 너무 일반적인 태그는 제외)
+        function dtcRelatedByTags(code, tags) {
+            const generic = new Set(['wiring', 'ground_power', 'ecu_software', 'battery_voltage']);
+            const mine = new Set((tags || []).filter(t => !generic.has(t)));
+            if (!mine.size) return [];
+            const num = c => parseInt(c.slice(1), 16);
+            const scored = [];
+            Object.keys(dtcCoreData).forEach(c => {
+                if (c === code) return;
+                const shared = (dtcCoreData[c].tags || []).filter(t => mine.has(t));
+                if (shared.length) scored.push({ c, shared, n: shared.length, dist: Math.abs(num(c) - num(code)) });
+            });
+            scored.sort((a, b) => b.n - a.n || a.dist - b.dist);
+            return scored.slice(0, 6);
+        }
+
+        // DB에 등록된 차종명 중 DTC 형식(예: C1500, B2200, B2300, B3000)과 겹치는 토큰 - 차종 검색을 우선하기 위함
+        let _dtcVehTokens = null;
+        function dtcVehicleTokens() {
+            if (_dtcVehTokens) return _dtcVehTokens;
+            const set = new Set();
+            const add = t => { const u = String(t).toUpperCase().replace(/[\s-]/g, ''); if (/^[PBCU][0-3][0-9A-F]{3}$/.test(u)) set.add(u); };
+            vehicleData.forEach(item => {
+                (item.keywords || []).forEach(add);
+                try { getParsed(item).vehicles.forEach(v => add(v.key)); } catch (e) { /* 파싱 실패 항목은 건너뜀 */ }
+            });
+            _dtcVehTokens = set;
+            return set;
+        }
+
         function parseDtcTokens(rawInput) {
             const cleaned = String(rawInput || '').trim().toUpperCase();
             if (!cleaned) return [];
             const tokens = cleaned.split(/[\s,;\/]+/).filter(Boolean);
             if (!tokens.length) return [];
             const dtcRegex = /^[PBCU][0-3][0-9A-F]{3}$/;
-            if (!tokens.every(t => dtcRegex.test(t))) return [];
+            if (!tokens.every(t => dtcRegex.test(t) && !dtcVehicleTokens().has(t))) return [];   // C1500·B2200 같은 차종명은 차종 검색 우선
             return Array.from(new Set(tokens));
         }
 
@@ -6384,10 +6906,33 @@ ${vinSourceNote}
                     </div>
                 ` : `
                     <div class="bg-blue-50/70 border border-blue-200 rounded-lg p-3 space-y-1">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-800 block">1. 계통별 진단 힌트</span>
-                        <p class="text-xs text-slate-700">${escapeHtml((base.causes || []).join(' / '))}</p>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-800 block">1. 계통별 진단 힌트 · 주요 원인 (우선순위순)</span>
+                        <ol class="list-decimal list-inside text-xs text-slate-700 space-y-0.5">${(base.causes || []).map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ol>
                     </div>
                 `;
+
+                // 0. 발생 원리 (Trigger 조건)
+                const triggerHtml = base.trigger ? `
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700 block mb-1">발생 원리 (Trigger 조건)</span>
+                        <p class="text-xs text-slate-800">${escapeHtml(base.trigger)}</p>
+                    </div>
+                ` : '';
+
+                // 연관 코드: 정밀 DB 항목은 공통 원인 태그 기준으로 자동 산출
+                const dynRel = base.isFallback ? [] : dtcRelatedByTags(base.code, base.tags);
+                const dynRelHtml = dynRel.length ? `
+                    <p class="text-[11px] text-slate-500 mb-1">동일 원인 계통을 공유하는 코드 — 함께 점등되면 공통 원인부터 점검하세요.</p>
+                    <ul class="space-y-1">
+                        ${dynRel.map(r => `
+                            <li class="text-xs text-slate-700">
+                                <span class="font-mono font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded mr-1">${escapeHtml(r.c)}</span>
+                                <span>${escapeHtml(dtcCoreData[r.c].titleKo)}</span>
+                                <span class="text-slate-400"> · 공통: ${escapeHtml(String(DTC_COMMON_TAG_LABELS[r.shared[0]] || r.shared[0]).split(' — ')[0])}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                ` : '';
 
                 // 2. 연관 고장코드
                 const relatedHtml = (ext && ext.relatedCodes && ext.relatedCodes.length) ? `
@@ -6405,7 +6950,7 @@ ${vinSourceNote}
                 ` : `
                     <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700 block mb-1">2. 연관 고장코드</span>
-                        <p class="text-xs text-slate-600">동일 뱅크(Bank 1/2) 연료트림(P0171~P0175), 실화(P0300~P0308), 센서 회로 코드를 스캔툴 Freeze Frame과 함께 확인하세요.</p>
+                        ${dynRelHtml || '<p class="text-xs text-slate-600">동일 뱅크(Bank 1/2) 연료트림(P0171~P0175), 실화(P0300~P0308), 센서 회로 코드를 스캔툴 Freeze Frame과 함께 확인하세요.</p>'}
                     </div>
                 `;
 
@@ -6487,6 +7032,7 @@ ${vinSourceNote}
                         </div>
 
                         <div class="p-4 space-y-3 text-xs md:text-sm">
+                            ${triggerHtml}
                             ${hintHtml}
                             ${relatedHtml}
                             ${tsbHtml}
