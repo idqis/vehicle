@@ -200,7 +200,30 @@
             </div>
 
             <!-- DTC (OBD-II 고장코드) 진단 결과 영역 -->
-            <section id="dtcResultSection" class="hidden mb-6 space-y-3">
+            <section id="dtcResultSection" class="mb-6 space-y-3">
+                <!-- 차량 컨텍스트 연동 DTC 입력 바 -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-3.5">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+                        <div class="flex flex-wrap items-center gap-2 text-xs">
+                            <span class="bg-slate-900 text-white font-bold px-2 py-0.5 rounded">DTC 정밀 진단</span>
+                            <span id="dtcActiveVehicleBadge" class="text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded">
+                                기준 차량: 미선택 (먼저 위에서 VIN 또는 차종·연식을 검색하세요)
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-1 max-w-xl">
+                            <input type="text" id="dtcCodeInput" autocomplete="off" spellcheck="false"
+                                oninput="handleDtcInputBox()"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();handleDtcInputBox();}"
+                                placeholder="고장코드 입력 (예: P0301, P0420, P0171)"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 font-mono text-xs md:text-sm uppercase focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500">
+                            <button type="button" onclick="clearDtcInputBox()"
+                                class="text-xs text-slate-500 hover:text-slate-800 px-2.5 py-1.5 border border-slate-200 rounded-lg shrink-0">
+                                초기화
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="dtcCommonSummary" class="hidden bg-amber-950 text-amber-50 rounded-xl p-4 border-l-4 border-amber-400 shadow-sm"></div>
                 <div id="dtcCardContainer" class="grid grid-cols-1 xl:grid-cols-2 gap-4"></div>
             </section>
@@ -5501,9 +5524,16 @@
                         <div>
                             <!-- 1. 카드 헤더 -->
                             <div class="p-4 border-b border-slate-100 bg-slate-50/70">
-                                <div class="flex justify-between items-center mb-1.5">
+                                <div class="flex justify-between items-center gap-2 mb-1.5">
                                     <div>${brandBadge}${matchBadge}</div>
-                                    <span class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded font-mono">${car.year}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded font-mono">${car.year}</span>
+                                        <button type="button"
+                                            onclick="setPinnedDtcVehicle({ source: '검색 선택', brand: '${car.brand}', make: '${car.brand}', model: '${escapeHtml(car.vehicle.key).replace(/'/g, "\'")}', year: ${car.yearRange ? car.yearRange[0] : 0}, engine: '${escapeHtml(car.engineRows.map(e => e.text).join(' / ')).replace(/'/g, "\'")}' })"
+                                            class="text-[11px] font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2 py-0.5 rounded transition">
+                                            DTC 기준 설정
+                                        </button>
+                                    </div>
                                 </div>
                                 <h2 class="text-lg font-bold text-slate-900 cursor-pointer hover:underline" onclick="selectViewEnc('VEHICLE','${encKey(vehicle.key)}')">${highlightHtml(car.title)}</h2>
                                 ${tagHtml ? `<div class="mb-1.5">${tagHtml}</div>` : ''}
@@ -5934,25 +5964,368 @@ ${vinSourceNote}
             };
         }
 
+        // ==========================================
+        // [차량 컨텍스트 연동 DTC 정밀 진단 & 조건 기반 TSB 검증 모듈]
+        // ==========================================
+        let pinnedDtcVehicle = null;
+
+        function getActiveVehicleContext() {
+            if (typeof vinDecoded !== 'undefined' && vinDecoded && (vinDecoded.make || vinDecoded.model)) {
+                const brand = detectBrandFromMake(vinDecoded.make);
+                const engineStr = [
+                    vinDecoded.dispL ? `${vinDecoded.dispL.toFixed(1)}L` : '',
+                    vinDecoded.engineModel || '',
+                    vinDecoded.isTurboBool ? 'Turbo' : '',
+                    vinDecoded.isHybridBool ? 'Hybrid' : ''
+                ].filter(Boolean).join(' ');
+                return {
+                    source: 'VIN',
+                    brand,
+                    make: vinDecoded.make,
+                    model: vinDecoded.model,
+                    year: vinDecoded.year || 0,
+                    engine: engineStr,
+                    dispL: vinDecoded.dispL || 0,
+                    isTurbo: !!vinDecoded.isTurboBool
+                };
+            }
+            if (pinnedDtcVehicle) return pinnedDtcVehicle;
+            return null;
+        }
+
+        function setPinnedDtcVehicle(ctx) {
+            pinnedDtcVehicle = ctx;
+            updateActiveVehicleBadge();
+            handleDtcInputBox();
+            const dtcInput = document.getElementById('dtcCodeInput');
+            if (dtcInput) {
+                dtcInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                dtcInput.focus();
+            }
+        }
+
+        function updateActiveVehicleBadge() {
+            const badge = document.getElementById('dtcActiveVehicleBadge');
+            if (!badge) return;
+            const ctx = getActiveVehicleContext();
+            if (!ctx) {
+                badge.className = 'text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded';
+                badge.textContent = '기준 차량: 미선택 (먼저 위에서 VIN 또는 차종·연식을 검색하세요)';
+                return;
+            }
+            const label = `${ctx.year || ''} ${ctx.brand} ${ctx.model} ${ctx.engine ? '(' + ctx.engine + ')' : ''}`.replace(/\s+/g, ' ').trim();
+            badge.className = 'text-emerald-900 bg-emerald-50 border border-emerald-300 font-semibold px-2.5 py-0.5 rounded';
+            badge.textContent = `기준 차량 [${ctx.source}]: ${label}`;
+        }
+
+        const DTC_EXTENDED_DB = {
+            P0301: {
+                code: 'P0301',
+                system: '점화 / 연소 계통 (1번 실린더 실화)',
+                titleKo: '1번 실린더 실화 감지 (Cylinder 1 Misfire Detected)',
+                titleEn: 'Cylinder 1 Misfire Detected',
+                brandHints: {
+                    TOYOTA: {
+                        parts: ['1번 점화코일(Denso Stick Coil)', '이리듐 스파크 플러그', '포트/직분사(D-4S) 인젝터', 'EGR 통로 카본 막힘(2ZR-FXE)'],
+                        causes: 'Denso 코일 내부 절연 열화 및 냉간 시동 시 헤드 가스켓 미세 냉각수 유입(3~4세대 Prius/2ZR 계열)',
+                        order: '① 1번↔2번 코일 스왑 후 P0302 이동 여부 확인 → ② 플러그 전극 마모 및 오일 유입 확인 → ③ 냉간 내시경/압력 테스트'
+                    },
+                    HONDA: {
+                        parts: ['1번 이그니션 코일', '밸브 간극(특히 K24/J35 배기밸브 타이트)', 'GDI 연료 인젝터(1.5T L15B7)', '헤드 가스켓(1.5T 초기형)'],
+                        causes: '1.5L VTEC Turbo 인젝터 분사 불균형 또는 VCM 가변실린더(J35 V6) 오일 소모로 인한 플러그 오염',
+                        order: '① 코일 스왑 테스트 → ② 스캔툴 실화 카운터 및 연료트림(STFT/LTFT) 확인 → ③ 압축압력/밸브 간극 점검'
+                    },
+                    HYUNDAI: {
+                        parts: ['1번 점화코일(Yura/Hansung)', 'GDI 고압 인젝터', '흡기밸브 카본 퇴적', '실린더 압축/피스톤 링(Theta II/Nu)'],
+                        causes: 'GDI 흡기밸브 카본 누적 및 코일 커넥터 잠금핀 유격으로 인한 간헐적 접촉 불량',
+                        order: '① 코일 커넥터 체결감 및 접지 확인 → ② 코일·플러그 스왑 → ③ 실린더 압축압력 및 인젝터 밸런스 테스트'
+                    },
+                    KIA: {
+                        parts: ['1번 점화코일', 'GDI 인젝터', '흡기밸브 카본 퇴적', '실린더 압축 압력'],
+                        causes: 'Theta II / Nu GDI 엔진의 코일 열화 및 인젝터 팁 카본 퇴적',
+                        order: '① 코일·플러그 교차 시험 → ② 연료레일 압력(FRP) 목표값 대비 실측값 비교 → ③ 압축압력 계측'
+                    },
+                    FORD: {
+                        parts: ['코일 부트(Coil Boot) 절연 파손', '스파크 플러그(EcoBoost 갭 벌어짐)', 'GDI 인젝터'],
+                        causes: 'EcoBoost 터보 엔진의 높은 연소압으로 인한 플러그 갭 확대 및 코일 고무 부트 트래킹(아크 누설)',
+                        order: '① 코일 부트 균열/흰색 아크 흔적 육안 점검 → ② 플러그 갭(0.028~0.031") 확인 → ③ 코일 스왑'
+                    },
+                    CHEVROLET: {
+                        parts: ['점화코일·배선 하네스', 'AFM/DFM 리프터(5.3L/6.2L V8 1번 실린더)', '스파크 플러그'],
+                        causes: '5.3L/6.2L EcoTec3 V8 엔진의 1번 실린더 AFM(가변실린더) 밸브 리프터 고착 주의',
+                        order: '① 코일/플러그/배선 1차 점검 → ② V8 엔진은 밸브 커버 탈거 후 1번 로커암 작동 스트로크 확인'
+                    },
+                    DEFAULT: {
+                        parts: ['1번 점화코일', '스파크 플러그', '1번 연료 인젝터', '실린더 압축(밸브/헤드 가스켓)'],
+                        causes: '점화 에너지 부족, 연료 분사량 편차 또는 기계적 압축 저하',
+                        order: '① 코일 스왑(1↔2번) → ② 플러그 스왑(1↔3번) → ③ 인젝터 작동음/파형 → ④ 압축압력 측정'
+                    }
+                },
+                relatedCodes: [
+                    { code: 'P0300', relation: '다기통 랜덤 실화 동반 시 단일 실린더 부품보다 연료압력·진공누설·타이밍·배터리 전압 등 공통 원인 의심' },
+                    { code: 'P0171 / P0174', relation: '희박 연소(Lean) 상태로 인해 실린더 착화 실패가 발생하며 P0301 유발 가능' },
+                    { code: 'P0420', relation: '실화 상태로 장시간 주행 시 미연소 연료가 촉매에서 후연소되어 촉매 손상(P0420) 2차 유발' },
+                    { code: 'P0201', relation: '1번 인젝터 회로 단선/단락 코드 동반 시 점화계통이 아닌 인젝터 배선·드라이버 우선 점검' }
+                ],
+                tsbs: [
+                    {
+                        brand: 'TOYOTA',
+                        models: ['prius', 'corolla'],
+                        yearRange: [2010, 2015],
+                        engineRegex: /1\.8|2zr/i,
+                        condition: '냉간 시동 직후 5~10초간 심한 진동과 함께 P0301/P0300 발생 (EGR 쿨러/밸브 카본 또는 인테이크 매니폴드 설계 개선 대상)',
+                        tsbNo: 'T-SB-0012-19 / T-SB-0027-16',
+                        title: 'Engine Rough Idle / Misfire DTC P0300-P0304 at Cold Startup (2ZR-FXE)'
+                    },
+                    {
+                        brand: 'HONDA',
+                        models: ['cr-v', 'civic', 'accord'],
+                        yearRange: [2017, 2021],
+                        engineRegex: /1\.5|l15/i,
+                        condition: '1.5L VTEC Turbo 엔진에서 냉간 실화(P0301~P0304) 및 연료 희박/농후 코드 동반 시 인젝터 4개 세트 개선품 교체 조건 해당 여부 확인',
+                        tsbNo: 'A21-016 / Service Bulletin 21-016',
+                        title: 'MIL Comes On with DTC P0300-P0304, P0172 (1.5L Turbo Fuel Injectors)'
+                    },
+                    {
+                        brand: 'CHEVROLET',
+                        models: ['silverado', 'tahoe', 'suburban'],
+                        yearRange: [2014, 2021],
+                        engineRegex: /5\.3|6\.2|l83|l84|l86|l87/i,
+                        condition: '5.3L / 6.2L V8 엔진에서 P0301(1번 실린더)과 함께 밸브트레인 타음이 동반될 경우 AFM/DFM 리프터 고착 점검 대상',
+                        tsbNo: 'PIP5659 / PIT5777',
+                        title: 'Engine Misfire P0301 / Bent Pushrod or Stuck AFM/DFM Lifter on V8'
+                    }
+                ],
+                precautions: [
+                    '코일·플러그·인젝터를 한 번에 모두 교체하지 말고, 반드시 1번↔인접 실린더로 교차 장착(Swap)하여 코드 이동 여부로 불량 부품을 특정할 것',
+                    '스캔툴 Mode $06(Misfire Monitor) 데이터에서 1번 실린더의 현재(Current) 및 과거(History) 실화 카운트 증가 조건(아이들 vs 고부하)을 먼저 구분할 것',
+                    '점화코일 커넥터 잠금 클립 파손 여부와 배선 피복 손상, 스파크 플러그 홀 내부 엔진오일 누유(밸브커버 가스켓 누유)를 먼저 점검할 것',
+                    '연료 희박(LTFT +15% 이상)이 동반된 상태라면 점화코일 교환만으로 해결되지 않으므로 흡기 매니폴드·인젝터 오링 진공 누설을 먼저 점검할 것'
+                ]
+            },
+
+            P0420: {
+                code: 'P0420',
+                system: '배기 / 삼원촉매 변환 효율 (Bank 1)',
+                titleKo: '촉매 시스템 효율 저하 (Bank 1)',
+                titleEn: 'Catalyst System Efficiency Below Threshold (Bank 1)',
+                brandHints: {
+                    TOYOTA: {
+                        parts: ['후방 산소센서(Bank 1 Sensor 2)', '전방 공연비 센서(A/F Sensor B1S1)', '배기 매니폴드/플랜지 가스켓 누기', '삼원촉매(TWC)'],
+                        causes: '고주행 차량의 촉매 귀금속 열화 또는 배기 플랜지(도넛 가스켓) 미세 누기로 인한 후방 O2 센서 파형 요동',
+                        order: '① 배기 누기(플랜지·플렉스 파이프) 점검 → ② B1S1·B1S2 센서 응답 파형 비교 → ③ 촉매 전후 온도차 확인'
+                    },
+                    HONDA: {
+                        parts: ['A/F 센서(B1S1) 및 후방 O2 센서(B1S2)', '밸브 스템 씰/피스톤 링 오일 소모', '삼원촉매'],
+                        causes: '엔진오일 소모로 인한 촉매 피독 또는 ECM 소프트웨어 공연비 판정 로직 민감도',
+                        order: '① 엔진오일 소모 이력 및 연료트림 확인 → ② B1S2 전압 파형(0.6~0.75V 안정 유지 여부) 계측 → ③ ECM 업데이트 여부 조회'
+                    },
+                    HYUNDAI: {
+                        parts: ['매니폴드 일체형 촉매(WCC)', '전·후방 산소센서', '플렉스 파이프 배기 누기'],
+                        causes: 'GDI 엔진 카본/오일 연소 부산물에 의한 WCC 촉매 효율 저하 및 플렉스 파이프 균열',
+                        order: '① 연료트림 및 과거 실화 코드 이력 확인 → ② 배기 누기 점검 → ③ B1S2 센서 파형이 B1S1을 추종하는지 확인'
+                    },
+                    KIA: {
+                        parts: ['매니폴드 일체형 촉매(WCC)', '전·후방 산소센서', '플렉스 파이프 배기 누기'],
+                        causes: 'GDI 엔진 오일 소모에 따른 촉매 열화 및 배기계 미세 누기',
+                        order: '① 오일 소모/실화 선행 원인 제거 → ② 전·후방 O2 센서 파형 비교 → ③ 촉매 교환 검토'
+                    },
+                    DEFAULT: {
+                        parts: ['삼원촉매(Catalytic Converter)', '후방 산소센서(B1S2)', '전방 공연비/O2 센서(B1S1)', '배기 가스켓·플렉스 파이프'],
+                        causes: '촉매의 산소 저장 능력(OSC) 저하, 배기 누기, 또는 상류 센서 응답 지연',
+                        order: '① 배기 누기 및 연료트림(±10% 이내) 확인 → ② B1S1과 B1S2 파형 동시 비교 → ③ 촉매 입·출구 온도 비교'
+                    }
+                },
+                relatedCodes: [
+                    { code: 'P0300 ~ P0304', relation: '실화로 유입된 미연소 가스가 촉매를 과열·용융시켜 P0420을 유발하는 가장 흔한 선행 원인' },
+                    { code: 'P0171 / P0172', relation: '연료 희박/농후 이상이 지속되면 촉매 산소 저장 판정 로직이 왜곡되어 P0420 오진단 발생 가능' },
+                    { code: 'P0136 / P0137 / P0138', relation: 'Bank 1 Sensor 2 회로/전압 이상 코드가 함께 있으면 촉매가 아닌 후방 산소센서 및 배선 우선 수리' }
+                ],
+                tsbs: [
+                    {
+                        brand: 'TOYOTA',
+                        models: ['camry', 'rav4', 'corolla'],
+                        yearRange: [2012, 2019],
+                        engineRegex: /2\.5|1\.8|2ar|2zr/i,
+                        condition: '배기 누기 및 연료트림 정상 상태에서 P0420 단독 점등 시 ECM 로직 보정(Calibration Update) 대상 여부 확인',
+                        tsbNo: 'T-SB-0068-18 (연식·캘리브레이션 ID별 상이)',
+                        title: 'MIL "ON" DTC P0420 - ECM Calibration Update Check'
+                    },
+                    {
+                        brand: 'HYUNDAI',
+                        models: ['sonata', 'tucson', 'santa fe', 'elantra'],
+                        yearRange: [2011, 2019],
+                        engineRegex: /2\.4|2\.0|theta|nu/i,
+                        condition: '실화·오일 소모가 없는 차량에서 P0420 점등 시 ECU 로직 업데이트 대상 연식·VIN 확인 후 촉매 점검',
+                        tsbNo: '18-FL-004 / 19-01-011H (차종·ECU ROM ID별 상이)',
+                        title: 'DTC P0420 Catalyst Efficiency Logic Improvement'
+                    }
+                ],
+                precautions: [
+                    '고가 부품인 삼원촉매를 바로 교환하기 전에, 반드시 연료트림(STFT/LTFT 합산 ±10% 이내)과 실화 코드(P030x) 유무를 먼저 해결할 것',
+                    '촉매 전단(배기 매니폴드 가스켓, 플렉스 파이프)에 미세한 배기 누기가 있으면 외부 산소가 유입되어 정상 촉매도 P0420이 표출됨',
+                    '스캔툴 그래프로 B1S1(빠른 진동)과 B1S2(약 0.6~0.7V 부근 완만한 유지)를 비교할 것 — B1S2가 B1S1과 동일한 진폭·주기로 움직이면 촉매 산소 저장능력 상실임',
+                    '산소센서 스페이서(O2 Spacer) 임의 장착은 북미 배출가스 검사(Smog/Emissions) 불합격 및 연료트림 왜곡을 유발하므로 금지'
+                ]
+            },
+
+            P0171: {
+                code: 'P0171',
+                system: '연료 및 공기 계량 (Bank 1 연료 희박)',
+                titleKo: '시스템 희박 상태 감지 (Bank 1)',
+                titleEn: 'System Too Lean (Bank 1)',
+                brandHints: {
+                    TOYOTA: {
+                        parts: ['MAF 센서 오염(열선 카본/먼지)', '흡기 인테이크 부트 균열', 'PCV 밸브/호스 경화', '인테이크 매니폴드 가스켓(1ZZ/2AZ)'],
+                        causes: 'MAF 센서 소자 오염으로 공기량을 실제보다 적게 계측하거나, 에어클리너 이후 흡기 주름관 균열로 미계측 공기 유입',
+                        order: '① 스캔툴 아이들 MAF g/s 실측값 확인(배기량과 유사 수치 기준) → ② 흡기 호스/PCV 진공 누설 스모크 테스트 → ③ 연료압력 점검'
+                    },
+                    HONDA: {
+                        parts: ['에어 인테이크 플로우 튜브 균열', 'MAF/MAP 센서 및 퍼지 솔레노이드 밸브(EVAP)', '연료 펌프/인젝터'],
+                        causes: '고무 흡기 덕트(에어필터 박스~스로틀바디 사이) 찢어짐으로 인한 미계측 공기 유입 빈발',
+                        order: '① 흡기 덕트 주름 부위 손으로 꺾어 균열 육안 확인 → ② EVAP 퍼지 밸브 상시 열림 여부 확인 → ③ STFT/LTFT 변화 관찰'
+                    },
+                    VOLKSWAGEN: {
+                        parts: ['PCV 다이어프램(Oil Separator) 파손', '흡기 매니폴드/터보 차지파이프 누설', '리어 메인 씰 진공 누설(EA888)'],
+                        causes: 'EA888 2.0T/1.8T 엔진의 PCV 밸브(오일 세퍼레이터) 내부 멤브레인 찢어짐으로 크랭크케이스 과진공 및 대량 공기 유입',
+                        order: '① 시동 중 오일 필러 캡을 열었을 때 과도한 진공 흡입력/휘파람 소리 확인 → ② 스모크 테스트 → ③ 연료 저압/고압 실측'
+                    },
+                    CHEVROLET: {
+                        parts: ['EVAP 퍼지 솔레노이드 밸브', 'MAF 센서 오염', '인테이크 매니폴드 가스켓', '연료 펌프 압력 저하'],
+                        causes: '1.4T(Cruze/Trax) 인테이크 매니폴드 내장 체크밸브 소실 및 PCV 다이어프램 파손, 또는 EVAP 퍼지 밸브 누설',
+                        order: '① 스모크 머신 진공 누설 점검 → ② EVAP 퍼지 라인 분리 후 진공 유무 확인 → ③ 연료레일 압력 계측'
+                    },
+                    DEFAULT: {
+                        parts: ['진공 호스/흡기 덕트 누설', 'MAF 센서 오염', 'EVAP 퍼지 밸브 고착', '연료 펌프/필터 압력 저하'],
+                        causes: '계량되지 않은 공기(Unmetered Air) 유입 또는 실제 연료 공급 압력/분사량 부족',
+                        order: '① 아이들 vs 2,500 RPM 연료트림(STFT+LTFT) 변화 비교 → ② 스모크 진공 누설 테스트 → ③ MAF 센서 및 연료압력 계측'
+                    }
+                },
+                relatedCodes: [
+                    { code: 'P0174', relation: 'V6/V8 엔진에서 P0171과 P0174(Bank 2 희박)가 동시 발생하면 MAF 센서, 공통 흡기 덕트, 연료펌프 등 양쪽 뱅크 공통 부품이 원인' },
+                    { code: 'P0101', relation: 'MAF 센서 범위/성능 코드 동반 시 진공 누설 또는 MAF 센서 오염/불량 가능성 매우 높음' },
+                    { code: 'P0507', relation: '아이들 RPM 상승 코드 동반 시 스로틀바디 후단 대량 진공 누설(PCV·브레이크 부스터·매니폴드) 강력 의심' },
+                    { code: 'P0441 / P0496', relation: 'EVAP 퍼지 유량 이상 코드 동반 시 퍼지 솔레노이드 밸브 열림 고착으로 인한 공기 유입 우선 점검' }
+                ],
+                tsbs: [
+                    {
+                        brand: 'CHEVROLET',
+                        models: ['cruze', 'trax', 'sonic'],
+                        yearRange: [2011, 2020],
+                        engineRegex: /1\.4|luv|luj/i,
+                        condition: '1.4L Turbo 엔진에서 P0171과 함께 밸브 커버 상단 다이어프램 휘파람 소음 발생 시 인테이크 매니폴드 체크밸브 유실 및 밸브 커버 동시 점검 대상',
+                        tsbNo: '14311 / PIP5197 (연식·VIN 적용 범위 확인 필수)',
+                        title: 'DTC P0171 / Whistle Noise from Camshaft Cover (1.4L LUV/LUJ)'
+                    },
+                    {
+                        brand: 'VOLKSWAGEN',
+                        models: ['jetta', 'gti', 'golf', 'tiguan', 'passat', 'cc'],
+                        yearRange: [2009, 2018],
+                        engineRegex: /2\.0|1\.8|ccta|cbfa|cpla|cppa/i,
+                        condition: 'EA888 터보 엔진에서 P0171 및 아이들 부조(P0507/P0300) 동반 시 크랭크케이스 브리더(PCV/Oil Separator) 멤브레인 손상 확인',
+                        tsbNo: '01-13-03 / 17-15-02 (엔진코드별 부품번호 상이)',
+                        title: 'Engine Running Lean DTC P0171 / Crankcase Breather Valve Inspection'
+                    }
+                ],
+                precautions: [
+                    '산소센서(B1S1)가 "희박" 신호를 보내고 있다고 해서 산소센서 불량으로 단정하고 교체하지 말 것 (센서가 정상 작동하여 실제 희박 상태를 보고하는 경우가 대부분)',
+                    '스캔툴에서 아이들 상태와 2,500 RPM 무부하 상태의 연료트림(STFT+LTFT)을 비교할 것: 아이들에서 +20% 이상 높다가 RPM 상승 시 정상(0% 부근)으로 내려오면 진공 누설, RPM 상승 시에도 계속 높으면 MAF 센서 또는 연료압력 부족임',
+                    'MAF 센서 세척 시 반드시 전용 MAF Sensor Cleaner만 사용하고, 열선/서미스터 소자를 면봉이나 손으로 절대 접촉하지 말 것',
+                    '배기 매니폴드 균열(전방 O2 센서 상류 배기 누기)이 있어도 외부 공기가 유입되어 ECU가 희박 상태로 오인하고 연료를 과다 분사할 수 있음'
+                ]
+            }
+        };
+
+        for (let cyl = 2; cyl <= 8; cyl++) {
+            const codeKey = `P030${cyl}`;
+            if (!DTC_EXTENDED_DB[codeKey]) {
+                DTC_EXTENDED_DB[codeKey] = {
+                    ...DTC_EXTENDED_DB.P0301,
+                    code: codeKey,
+                    system: `점화 / 연소 계통 (${cyl}번 실린더 실화)`,
+                    titleKo: `${cyl}번 실린더 실화 감지 (Cylinder ${cyl} Misfire Detected)`,
+                    titleEn: `Cylinder ${cyl} Misfire Detected`
+                };
+            }
+        }
+
+        function evaluateTsbsForVehicle(tsbList) {
+            const ctx = getActiveVehicleContext();
+            const matched = [];
+            const conditional = [];
+
+            (tsbList || []).forEach(tsb => {
+                if (!ctx) {
+                    conditional.push({ ...tsb, status: 'UNSELECTED', reason: '기준 차량 미선택 (연식·엔진 조건 대조 필요)' });
+                    return;
+                }
+                if (tsb.brand !== ctx.brand) return;
+
+                const modelNorm = String(ctx.model || '').toLowerCase();
+                const modelHit = !tsb.models || tsb.models.some(m => modelNorm.includes(m));
+                const yearHit = !ctx.year || (ctx.year >= tsb.yearRange[0] && ctx.year <= tsb.yearRange[1]);
+                const engineHit = !tsb.engineRegex || !ctx.engine || tsb.engineRegex.test(ctx.engine);
+
+                if (modelHit && yearHit && engineHit) {
+                    matched.push({
+                        ...tsb,
+                        status: 'MATCH',
+                        reason: `차종(${ctx.model}) · 연식(${tsb.yearRange[0]}~${tsb.yearRange[1]}) · 엔진 조건 일치`
+                    });
+                } else if (modelHit) {
+                    const diffs = [];
+                    if (!yearHit && ctx.year) diffs.push(`대상 연식 ${tsb.yearRange[0]}~${tsb.yearRange[1]} (현재 ${ctx.year}년식)`);
+                    if (!engineHit && ctx.engine) diffs.push(`대상 엔진 조건과 현재 엔진(${ctx.engine}) 상이`);
+                    conditional.push({
+                        ...tsb,
+                        status: 'MISMATCH_CONDITION',
+                        reason: diffs.join(' / ') || '세부 엔진·캘리브레이션 조건 확인 필요'
+                    });
+                }
+            });
+
+            const nhtsaUrl = (ctx && ctx.year && ctx.make && ctx.model)
+                ? `https://www.nhtsa.gov/vehicle/${encodeURIComponent(ctx.year)}/${encodeURIComponent(ctx.make)}/${encodeURIComponent(ctx.model)}#manufacturerCommunications`
+                : `https://www.nhtsa.gov/recalls`;
+
+            return { ctx, matched, conditional, nhtsaUrl };
+        }
+
+        function handleDtcInputBox() {
+            const dtcInput = document.getElementById('dtcCodeInput');
+            const raw = dtcInput ? dtcInput.value.trim().toUpperCase() : '';
+            const codes = parseDtcTokens(raw);
+            renderDtcDiagnosis(codes);
+        }
+
+        function clearDtcInputBox() {
+            const dtcInput = document.getElementById('dtcCodeInput');
+            if (dtcInput) dtcInput.value = '';
+            renderDtcDiagnosis([]);
+        }
+
         function renderDtcDiagnosis(codes) {
-            const section = document.getElementById('dtcResultSection');
             const summaryEl = document.getElementById('dtcCommonSummary');
             const container = document.getElementById('dtcCardContainer');
-            if (!section || !container) return;
+            if (!container) return;
+
+            updateActiveVehicleBadge();
 
             if (!codes || !codes.length) {
-                section.classList.add('hidden');
+                if (summaryEl) {
+                    summaryEl.innerHTML = '';
+                    summaryEl.classList.add('hidden');
+                }
                 container.innerHTML = '';
-                if (summaryEl) summaryEl.classList.add('hidden');
                 return;
             }
 
-            const items = codes.map(c => dtcCoreData[c] || buildFallbackDtcInfo(c));
+            const baseItems = codes.map(c => dtcCoreData[c] || buildFallbackDtcInfo(c));
 
             if (summaryEl) {
-                if (items.length >= 2) {
+                if (baseItems.length >= 2) {
                     const tagCounts = {};
-                    items.forEach(it => (it.tags || []).forEach(t => {
+                    baseItems.forEach(it => (it.tags || []).forEach(t => {
                         tagCounts[t] = (tagCounts[t] || 0) + 1;
                     }));
                     const sharedTags = Object.entries(tagCounts)
@@ -5979,21 +6352,128 @@ ${vinSourceNote}
                 }
             }
 
-            container.className = items.length > 1
+            const ctx = getActiveVehicleContext();
+            const brandKey = (ctx && ctx.brand && ctx.brand !== 'ALL') ? ctx.brand : 'DEFAULT';
+
+            container.className = codes.length > 1
                 ? 'grid grid-cols-1 xl:grid-cols-2 gap-4'
-                : 'grid grid-cols-1 max-w-3xl gap-4';
+                : 'grid grid-cols-1 max-w-4xl gap-4';
 
-            container.innerHTML = items.map(item => {
-                const badgeHtml = item.isFallback
+            container.innerHTML = codes.map((code, idx) => {
+                const ext = DTC_EXTENDED_DB[code];
+                const base = baseItems[idx];
+                const item = ext || base;
+
+                const badgeHtml = !ext && base.isFallback
                     ? `<span class="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-bold px-2 py-0.5 rounded">규칙 기반 계통 분석</span>`
-                    : `<span class="bg-rose-100 text-rose-800 border border-rose-300 text-[11px] font-bold px-2 py-0.5 rounded">핵심 DTC 진단 DB</span>`;
+                    : `<span class="bg-rose-100 text-rose-800 border border-rose-300 text-[11px] font-bold px-2 py-0.5 rounded">정밀 진단 DB</span>`;
 
-                const activeVehicleHint = (typeof vinDecoded !== 'undefined' && vinDecoded && (vinDecoded.make || vinDecoded.model))
-                    ? `<span class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">현재 VIN 컨텍스트: ${escapeHtml(`${vinDecoded.year || ''} ${vinDecoded.make || ''} ${vinDecoded.model || ''}`.trim())}</span>`
-                    : '';
+                // 1. 브랜드별 진단 힌트
+                const hintObj = (ext && ext.brandHints)
+                    ? (ext.brandHints[brandKey] || ext.brandHints.DEFAULT)
+                    : null;
+
+                const hintHtml = hintObj ? `
+                    <div class="bg-blue-50/70 border border-blue-200 rounded-lg p-3 space-y-1.5">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-800 block">
+                            1. 브랜드별 진단 힌트 (${escapeHtml(brandKey === 'DEFAULT' ? '공통 표준' : brandKey)})
+                        </span>
+                        <p class="text-xs text-slate-800"><strong>주요 점검 부품:</strong> ${escapeHtml(hintObj.parts.join(' · '))}</p>
+                        <p class="text-xs text-slate-700"><strong>빈발 고장 원인:</strong> ${escapeHtml(hintObj.causes)}</p>
+                        <p class="text-xs text-blue-900 font-medium"><strong>권장 점검 순서:</strong> ${escapeHtml(hintObj.order)}</p>
+                    </div>
+                ` : `
+                    <div class="bg-blue-50/70 border border-blue-200 rounded-lg p-3 space-y-1">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-800 block">1. 계통별 진단 힌트</span>
+                        <p class="text-xs text-slate-700">${escapeHtml((base.causes || []).join(' / '))}</p>
+                    </div>
+                `;
+
+                // 2. 연관 고장코드
+                const relatedHtml = (ext && ext.relatedCodes && ext.relatedCodes.length) ? `
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1.5">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700 block">2. 연관 고장코드 및 상관관계</span>
+                        <ul class="space-y-1">
+                            ${ext.relatedCodes.map(r => `
+                                <li class="text-xs text-slate-700">
+                                    <span class="font-mono font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded mr-1">${escapeHtml(r.code)}</span>
+                                    <span>${escapeHtml(r.relation)}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : `
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700 block mb-1">2. 연관 고장코드</span>
+                        <p class="text-xs text-slate-600">동일 뱅크(Bank 1/2) 연료트림(P0171~P0175), 실화(P0300~P0308), 센서 회로 코드를 스캔툴 Freeze Frame과 함께 확인하세요.</p>
+                    </div>
+                `;
+
+                // 3. TSB 정보 (연식·차종·엔진·적용 조건 검증)
+                const tsbEval = evaluateTsbsForVehicle(ext ? ext.tsbs : []);
+                let tsbBodyHtml = '';
+                if (!tsbEval.ctx) {
+                    tsbBodyHtml = `<p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2">⚠️ 기준 차량이 선택되지 않아 TSB 적용 여부를 판정할 수 없습니다. 상단에서 <strong>17자리 VIN 또는 연식·차종</strong>을 먼저 검색해 주세요.</p>`;
+                } else if (tsbEval.matched.length > 0) {
+                    tsbBodyHtml = tsbEval.matched.map(t => `
+                        <div class="bg-emerald-50 border border-emerald-300 rounded p-2 space-y-1">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">적용 조건 일치</span>
+                                <span class="font-mono text-xs font-bold text-emerald-950">${escapeHtml(t.tsbNo)}</span>
+                                <span class="text-[11px] text-emerald-800">(${escapeHtml(t.reason)})</span>
+                            </div>
+                            <p class="text-xs font-semibold text-slate-800">${escapeHtml(t.title)}</p>
+                            <p class="text-xs text-slate-700"><strong>적용 조건:</strong> ${escapeHtml(t.condition)}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    tsbBodyHtml = `<p class="text-xs text-slate-700">현재 차량(<strong>${escapeHtml(`${tsbEval.ctx.year || ''} ${tsbEval.ctx.brand} ${tsbEval.ctx.model} ${tsbEval.ctx.engine}`.trim())}</strong>)과 정확히 일치하는 내장 TSB가 없거나, 동일 코드라도 연식·엔진 조건이 다릅니다.</p>`;
+                }
+
+                if (tsbEval.conditional.length > 0) {
+                    tsbBodyHtml += tsbEval.conditional.map(t => `
+                        <div class="mt-1.5 bg-slate-100 border border-slate-300 rounded p-2 space-y-0.5 opacity-90">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="bg-amber-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">조건 상이 · 참고용</span>
+                                <span class="font-mono text-xs font-bold text-slate-800">${escapeHtml(t.tsbNo)}</span>
+                                <span class="text-[11px] text-amber-800">${escapeHtml(t.reason)}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600">${escapeHtml(t.condition)}</p>
+                        </div>
+                    `).join('');
+                }
+
+                const tsbHtml = `
+                    <div class="bg-indigo-50/60 border border-indigo-200 rounded-lg p-3 space-y-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-900">3. TSB 정보 (연식·차종·엔진·적용 조건 검증)</span>
+                            <a href="${tsbEval.nhtsaUrl}" target="_blank" rel="noopener noreferrer"
+                               class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 underline">
+                                NHTSA 공식 TSB/문서 조회 ↗
+                            </a>
+                        </div>
+                        ${tsbBodyHtml}
+                    </div>
+                `;
+
+                // 4. 정비 주의사항
+                const precautionsList = (ext && ext.precautions) ? ext.precautions : (base.checkpoints || []);
+                const cautionHtml = `
+                    <div class="bg-amber-50/70 border border-amber-200 rounded-lg p-3 space-y-1.5">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-amber-900 block">4. 정비 주의사항 (부품 교환 전 필수 계측·점검)</span>
+                        <ul class="space-y-1">
+                            ${precautionsList.map(p => `
+                                <li class="flex items-start gap-1.5 text-xs text-slate-800">
+                                    <span class="text-amber-600 font-bold shrink-0">⚠</span>
+                                    <span>${escapeHtml(p)}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
 
                 return `
-                    <article class="bg-white rounded-xl shadow-sm border ${item.isFallback ? 'border-amber-300' : 'border-rose-300'} overflow-hidden">
+                    <article class="bg-white rounded-xl shadow-sm border border-rose-300 overflow-hidden">
                         <div class="p-4 bg-slate-900 text-white border-b border-slate-800">
                             <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                                 <div class="flex items-center gap-2">
@@ -6007,42 +6487,14 @@ ${vinSourceNote}
                         </div>
 
                         <div class="p-4 space-y-3 text-xs md:text-sm">
-                            ${activeVehicleHint ? `<div>${activeVehicleHint}</div>` : ''}
-
-                            <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">발생 조건 (Set Criteria)</span>
-                                <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(item.trigger)}</p>
-                            </div>
-
-                            <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-rose-700 block mb-1">주요 원인 (빈도순)</span>
-                                <ol class="space-y-1">
-                                    ${item.causes.map((c, i) => `
-                                        <li class="flex items-start gap-2 text-xs text-slate-700">
-                                            <span class="bg-rose-100 text-rose-800 font-bold rounded-full w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">${i + 1}</span>
-                                            <span>${escapeHtml(c)}</span>
-                                        </li>
-                                    `).join('')}
-                                </ol>
-                            </div>
-
-                            <div class="pt-2.5 border-t border-slate-100">
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">현장 점검 포인트 (스캔툴 / 계측)</span>
-                                <ul class="space-y-1 bg-emerald-50/50 border border-emerald-100 rounded-lg p-2.5">
-                                    ${item.checkpoints.map(cp => `
-                                        <li class="flex items-start gap-1.5 text-xs text-slate-700">
-                                            <span class="text-emerald-600 font-bold shrink-0">✓</span>
-                                            <span>${escapeHtml(cp)}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
-                            </div>
+                            ${hintHtml}
+                            ${relatedHtml}
+                            ${tsbHtml}
+                            ${cautionHtml}
                         </div>
                     </article>
                 `;
             }).join('');
-
-            section.classList.remove('hidden');
         }
 
         (function attachDtcHandlers() {
@@ -6050,6 +6502,12 @@ ${vinSourceNote}
             const origHandleSearchSubmit = window.handleSearchSubmit;
             const origSetBrandFilter = window.setBrandFilter;
             const origClearSearch = window.clearSearch;
+            const origRenderCards = window.renderCards;
+
+            window.renderCards = function () {
+                if (typeof origRenderCards === 'function') origRenderCards.apply(this, arguments);
+                updateActiveVehicleBadge();
+            };
 
             window.handleInput = function () {
                 const inputEl = document.getElementById('searchInput');
@@ -6059,15 +6517,16 @@ ${vinSourceNote}
                 if (dtcCodes.length > 0) {
                     if (typeof hideSuggestions === 'function') hideSuggestions();
                     if (typeof renderTimer !== 'undefined') clearTimeout(renderTimer);
+                    const dtcBox = document.getElementById('dtcCodeInput');
+                    if (dtcBox) dtcBox.value = dtcCodes.join(', ');
                     renderDtcDiagnosis(dtcCodes);
                     if (activeVinMatch === null) {
                         const rc = document.getElementById('resultCount');
-                        if (rc) rc.textContent = `DTC 고장코드 진단 모드 (${dtcCodes.join(', ')}) · 차종명 또는 17자리 VIN 입력 시 차량 제원 표시`;
+                        if (rc) rc.textContent = `DTC 고장코드 진단 모드 (${dtcCodes.join(', ')}) · 상단에서 VIN 또는 차종·연식을 먼저 검색해 기준 차량을 지정하세요`;
                     }
                     return;
                 }
 
-                renderDtcDiagnosis([]);
                 if (typeof origHandleInput === 'function') origHandleInput.apply(this, arguments);
             };
 
@@ -6078,22 +6537,24 @@ ${vinSourceNote}
 
                 if (dtcCodes.length > 0) {
                     if (typeof hideSuggestions === 'function') hideSuggestions();
+                    const dtcBox = document.getElementById('dtcCodeInput');
+                    if (dtcBox) dtcBox.value = dtcCodes.join(', ');
                     renderDtcDiagnosis(dtcCodes);
                     return;
                 }
 
-                renderDtcDiagnosis([]);
                 if (typeof origHandleSearchSubmit === 'function') origHandleSearchSubmit.apply(this, arguments);
             };
 
             window.setBrandFilter = function () {
-                renderDtcDiagnosis([]);
                 if (typeof origSetBrandFilter === 'function') origSetBrandFilter.apply(this, arguments);
             };
 
             window.clearSearch = function () {
-                renderDtcDiagnosis([]);
+                pinnedDtcVehicle = null;
                 if (typeof origClearSearch === 'function') origClearSearch.apply(this, arguments);
+                updateActiveVehicleBadge();
+                handleDtcInputBox();
             };
         })();
 
